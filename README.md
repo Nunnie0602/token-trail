@@ -91,25 +91,10 @@ Token Trail 希望回答：
 - Docker Compose： 封裝 FastAPI、Redis 與 Ollama 環境，實現單機一鍵隔離部署。
 
 
-# 系統架構[待維護]
+# 系統架構
 詳細架構文件請參閱：docs/architecture/
-```Markdown
-┌─────────────────────────┐
-│ React + Canvas Frontend │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│     FastAPI Backend     │
-└──────┬─────────┬────────┘
-       │         │
-       ▼         ▼
 
-┌──────────┐  ┌─────────────┐
-│  Redis   │  │   Ollama    │
-│  Cache   │  │ Qwen Runtime│
-└──────────┘  └─────────────┘
-```
+![SA](docs/architecture/SA_readmever.jpg)
 
 # 快速開始
 ## 前置條件
@@ -219,7 +204,8 @@ pytest
   - Grafana Dashboard
   - Leaderboard
   - 社群分享功能
-# 核心理念[待維護]
+
+# 核心理念
 Token Trail 將大型語言模型的解碼流程轉化為可互動的遊戲體驗，
 探索資訊轉譯、系統設計與 AI 教育之間的可能性。
 詳細設計理念請參閱： `docs/design-rationale.md`

@@ -1,0 +1,4 @@
+# Token Trail — 根目錄一鍵啟動入口
+# 用法: docker compose up --build
+include:
+  - path: infra/docker/docker-compose.yml

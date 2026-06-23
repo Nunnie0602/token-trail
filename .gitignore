@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Node.js
+node_modules/
+
 # Distribution / packaging
 .Python
 build/
@@ -216,3 +219,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local documentation (not for version control)
+local_doc/
