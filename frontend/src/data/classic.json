@@ -1,0 +1,546 @@
+{
+  "mode": "classic",
+  "initial_tokens": [
+    { "token_id": "INIT_01", "text": "夜半時分" },
+    { "token_id": "INIT_02", "text": "週末深夜" },
+    { "token_id": "INIT_03", "text": "加班回家途中" }
+  ],
+  "nodes": {
+    "INIT_01": {
+      "next": [
+        { "token_id": "C_L1A", "text": "聽見敲門", "prob": 0.78 },
+        { "token_id": "C_L1B", "text": "看見鬼影", "prob": 0.11 },
+        { "token_id": "C_L1C", "text": "撿到珍珠奶茶", "prob": 0.05 },
+        { "token_id": "C_L1D", "text": "窗外傳來笑聲", "prob": 0.06 }
+      ]
+    },
+    "INIT_02": {
+      "next": [
+        { "token_id": "C_L1A", "text": "聽見敲門", "prob": 0.72 },
+        { "token_id": "C_L1B", "text": "看見鬼影", "prob": 0.14 },
+        { "token_id": "C_L1C", "text": "撿到珍珠奶茶", "prob": 0.08 },
+        { "token_id": "C_L1D", "text": "窗外傳來笑聲", "prob": 0.06 }
+      ]
+    },
+    "INIT_03": {
+      "next": [
+        { "token_id": "C_L1A", "text": "聽見敲門", "prob": 0.65 },
+        { "token_id": "C_L1B", "text": "看見鬼影", "prob": 0.18 },
+        { "token_id": "C_L1C", "text": "撿到珍珠奶茶", "prob": 0.12 },
+        { "token_id": "C_L1D", "text": "窗外傳來笑聲", "prob": 0.05 }
+      ]
+    },
+    "C_L1A": {
+      "next": [
+        { "token_id": "C_L2A", "text": "打開門縫", "prob": 0.71 },
+        { "token_id": "C_L2B", "text": "裝作沒聽見", "prob": 0.15 },
+        { "token_id": "C_L2C", "text": "拿起掃把防身", "prob": 0.09 },
+        { "token_id": "C_L2D", "text": "開始直播求援", "prob": 0.05 }
+      ]
+    },
+    "C_L1B": {
+      "next": [
+        { "token_id": "C_L2E", "text": "定睛再看", "prob": 0.68 },
+        { "token_id": "C_L2F", "text": "拉上窗簾", "prob": 0.17 },
+        { "token_id": "C_L2G", "text": "拍下照片", "prob": 0.1 },
+        { "token_id": "C_L2H", "text": "轉身逃跑", "prob": 0.05 }
+      ]
+    },
+    "C_L1C": {
+      "next": [
+        { "token_id": "C_L2I", "text": "插上吸管", "prob": 0.62 },
+        { "token_id": "C_L2J", "text": "檢查成分表", "prob": 0.2 },
+        { "token_id": "C_L2K", "text": "拍照打卡", "prob": 0.12 },
+        { "token_id": "C_L2L", "text": "懷疑是陷阱", "prob": 0.06 }
+      ]
+    },
+    "C_L1D": {
+      "next": [
+        { "token_id": "C_L2M", "text": "探頭查看", "prob": 0.7 },
+        { "token_id": "C_L2N", "text": "關上所有窗戶", "prob": 0.14 },
+        { "token_id": "C_L2O", "text": "播放白噪音", "prob": 0.11 },
+        { "token_id": "C_L2P", "text": "跟著笑出聲", "prob": 0.05 }
+      ]
+    },
+    "C_L2A": {
+      "next": [
+        { "token_id": "C_L3A", "text": "看見外賣員", "prob": 0.74 },
+        { "token_id": "C_L3B", "text": "門外空無一人", "prob": 0.13 },
+        { "token_id": "C_L3C", "text": "收到匿名包裹", "prob": 0.08 },
+        { "token_id": "C_L3D", "text": "門把自動轉動", "prob": 0.05 }
+      ]
+    },
+    "C_L2B": {
+      "next": [
+        { "token_id": "C_L3E", "text": "敲門聲加劇", "prob": 0.66 },
+        { "token_id": "C_L3F", "text": "手機收到訊息", "prob": 0.18 },
+        { "token_id": "C_L3G", "text": "鄰居傳來敲牆", "prob": 0.11 },
+        { "token_id": "C_L3H", "text": "突然安靜下來", "prob": 0.05 }
+      ]
+    },
+    "C_L2C": {
+      "next": [
+        { "token_id": "C_L3I", "text": "掃把斷成兩截", "prob": 0.6 },
+        { "token_id": "C_L3J", "text": "門被輕輕推開", "prob": 0.22 },
+        { "token_id": "C_L3K", "text": "發現是室友惡作劇", "prob": 0.12 },
+        { "token_id": "C_L3L", "text": "掃把變成光劍", "prob": 0.06 }
+      ]
+    },
+    "C_L2D": {
+      "next": [
+        { "token_id": "C_L3M", "text": "觀眾刷屏快跑", "prob": 0.58 },
+        { "token_id": "C_L3N", "text": "彈幕說是劇本", "prob": 0.24 },
+        { "token_id": "C_L3O", "text": "直播間被封禁", "prob": 0.12 },
+        { "token_id": "C_L3P", "text": "收到斗內通知", "prob": 0.06 }
+      ]
+    },
+    "C_L2E": {
+      "next": [
+        { "token_id": "C_L3Q", "text": "鬼影消失", "prob": 0.7 },
+        { "token_id": "C_L3R", "text": "鬼影靠近", "prob": 0.15 },
+        { "token_id": "C_L3S", "text": "原來是衣架", "prob": 0.1 },
+        { "token_id": "C_L3T", "text": "鬼影開始說話", "prob": 0.05 }
+      ]
+    },
+    "C_L2F": {
+      "next": [
+        { "token_id": "C_L3U", "text": "窗簾後有腳步", "prob": 0.67 },
+        { "token_id": "C_L3V", "text": "一切恢復平靜", "prob": 0.19 },
+        { "token_id": "C_L3W", "text": "窗簾自行拉開", "prob": 0.09 },
+        { "token_id": "C_L3X", "text": "發現貓咪搗蛋", "prob": 0.05 }
+      ]
+    },
+    "C_L2G": {
+      "next": [
+        { "token_id": "C_L3Y", "text": "照片出現重影", "prob": 0.55 },
+        { "token_id": "C_L3Z", "text": "相機當機", "prob": 0.25 },
+        { "token_id": "C_L4A", "text": "拍到清晰人臉", "prob": 0.14 },
+        { "token_id": "C_L4B", "text": "雲端自動備份", "prob": 0.06 }
+      ]
+    },
+    "C_L2H": {
+      "next": [
+        { "token_id": "C_L4C", "text": "絆倒在地", "prob": 0.63 },
+        { "token_id": "C_L4D", "text": "衝出大門", "prob": 0.2 },
+        { "token_id": "C_L4E", "text": "躲進衣櫃", "prob": 0.12 },
+        { "token_id": "C_L4F", "text": "喊叫鄰居幫忙", "prob": 0.05 }
+      ]
+    },
+    "C_L2I": {
+      "next": [
+        { "token_id": "C_L4G", "text": "味道異常甜美", "prob": 0.72 },
+        { "token_id": "C_L4H", "text": "珍珠會自己動", "prob": 0.12 },
+        { "token_id": "C_L4I", "text": "杯身寫著警告", "prob": 0.11 },
+        { "token_id": "C_L4J", "text": "喝完整個清醒", "prob": 0.05 }
+      ]
+    },
+    "C_L2J": {
+      "next": [
+        { "token_id": "C_L4K", "text": "成分表空白", "prob": 0.61 },
+        { "token_id": "C_L4L", "text": "發現過期標籤", "prob": 0.21 },
+        { "token_id": "C_L4M", "text": "查無品牌資訊", "prob": 0.12 },
+        { "token_id": "C_L4N", "text": "竟是限定聯名", "prob": 0.06 }
+      ]
+    },
+    "C_L2K": {
+      "next": [
+        { "token_id": "C_L4O", "text": "社群瘋傳", "prob": 0.69 },
+        { "token_id": "C_L4P", "text": "被認出住址", "prob": 0.14 },
+        { "token_id": "C_L4Q", "text": "收到品牌邀約", "prob": 0.11 },
+        { "token_id": "C_L4R", "text": "照片自動消失", "prob": 0.06 }
+      ]
+    },
+    "C_L2L": {
+      "next": [
+        { "token_id": "C_L4S", "text": "奶茶開始發光", "prob": 0.52 },
+        { "token_id": "C_L4T", "text": "杯底有紙條", "prob": 0.28 },
+        { "token_id": "C_L4U", "text": "果然是惡作劇", "prob": 0.14 },
+        { "token_id": "C_L4V", "text": "陷阱啟動了", "prob": 0.06 }
+      ]
+    },
+    "C_L2M": {
+      "next": [
+        { "token_id": "C_L4W", "text": "看見鄰居遛狗", "prob": 0.76 },
+        { "token_id": "C_L4X", "text": "笑聲來自對樓", "prob": 0.12 },
+        { "token_id": "C_L4Y", "text": "空氣突然變冷", "prob": 0.08 },
+        { "token_id": "C_L4Z", "text": "有人招手", "prob": 0.04 }
+      ]
+    },
+    "C_L2N": {
+      "next": [
+        { "token_id": "C_L5A", "text": "屋內更安靜", "prob": 0.7 },
+        { "token_id": "C_L5B", "text": "玻璃出現裂痕", "prob": 0.15 },
+        { "token_id": "C_L5C", "text": "電話鈴響起", "prob": 0.1 },
+        { "token_id": "C_L5D", "text": "笑聲從牆內傳出", "prob": 0.05 }
+      ]
+    },
+    "C_L2O": {
+      "next": [
+        { "token_id": "C_L5E", "text": "成功蓋過笑聲", "prob": 0.73 },
+        { "token_id": "C_L5F", "text": "白噪音夾雜低語", "prob": 0.14 },
+        { "token_id": "C_L5G", "text": "鄰居敲門抗議", "prob": 0.09 },
+        { "token_id": "C_L5H", "text": "音響自動關閉", "prob": 0.04 }
+      ]
+    },
+    "C_L2P": {
+      "next": [
+        { "token_id": "C_L5I", "text": "笑聲同步呼應", "prob": 0.48 },
+        { "token_id": "C_L5J", "text": "鄰居以為瘋了", "prob": 0.27 },
+        { "token_id": "C_L5K", "text": "笑聲戛然而止", "prob": 0.18 },
+        { "token_id": "C_L5L", "text": "收到匿名讚賞", "prob": 0.07 }
+      ]
+    },
+    "C_L3A": {
+      "next": [
+        { "token_id": "C_L5M", "text": "外賣員遞上餐點", "prob": 0.8 },
+        { "token_id": "C_L5N", "text": "外賣員面無表情", "prob": 0.1 },
+        { "token_id": "C_L5O", "text": "外賣員轉身消失", "prob": 0.06 },
+        { "token_id": "EOS_C1", "text": "故事告一段落", "prob": 0.04, "is_eos": true }
+      ]
+    },
+    "C_L3B": {
+      "next": [
+        { "token_id": "C_L5P", "text": "地上有泥濘腳印", "prob": 0.65 },
+        { "token_id": "C_L5Q", "text": "門鈴再次響起", "prob": 0.2 },
+        { "token_id": "C_L5R", "text": "收到延遲簡訊", "prob": 0.1 },
+        { "token_id": "EOS_C2", "text": "夜色歸於沉寂", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L3C": {
+      "next": [
+        { "token_id": "C_L5S", "text": "包裹沒有寄件人", "prob": 0.58 },
+        { "token_id": "C_L5T", "text": "拆開是空白紙", "prob": 0.22 },
+        { "token_id": "C_L5U", "text": "裡面是珍珠奶茶", "prob": 0.14 },
+        { "token_id": "EOS_C3", "text": "謎團暫時塵埃落定", "prob": 0.06, "is_eos": true }
+      ]
+    },
+    "C_L3D": {
+      "next": [
+        { "token_id": "C_L5V", "text": "門緩緩打開", "prob": 0.55 },
+        { "token_id": "C_L5W", "text": "門把停止轉動", "prob": 0.25 },
+        { "token_id": "C_L5X", "text": "門外傳來嘆息", "prob": 0.14 },
+        { "token_id": "EOS_C4", "text": "一切回歸日常", "prob": 0.06, "is_eos": true }
+      ]
+    },
+    "C_L3E": {
+      "next": [
+        { "token_id": "C_L5Y", "text": "門板出現裂痕", "prob": 0.6 },
+        { "token_id": "C_L5Z", "text": "敲門變成敲牆", "prob": 0.22 },
+        { "token_id": "C_L6A", "text": "敲門聲有節奏", "prob": 0.12 },
+        { "token_id": "EOS_C5", "text": "黎明終於到來", "prob": 0.06, "is_eos": true }
+      ]
+    },
+    "C_L3F": {
+      "next": [
+        { "token_id": "C_L6B", "text": "訊息寫著別開門", "prob": 0.75 },
+        { "token_id": "C_L6C", "text": "訊息是空白", "prob": 0.12 },
+        { "token_id": "C_L6D", "text": "號碼無法回撥", "prob": 0.08 },
+        { "token_id": "EOS_C6", "text": "你選擇結束這一夜", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L3G": {
+      "next": [
+        { "token_id": "C_L6E", "text": "鄰居也聽見了", "prob": 0.7 },
+        { "token_id": "C_L6F", "text": "牆壁開始震動", "prob": 0.15 },
+        { "token_id": "C_L6G", "text": "管理員前來查看", "prob": 0.1 },
+        { "token_id": "EOS_C7", "text": "喧囂漸漸散去", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L3H": {
+      "next": [
+        { "token_id": "C_L6H", "text": "你鬆了一口氣", "prob": 0.78 },
+        { "token_id": "C_L6I", "text": "燈光忽明忽暗", "prob": 0.12 },
+        { "token_id": "C_L6J", "text": "冰箱門自己打開", "prob": 0.06 },
+        { "token_id": "EOS_C8", "text": "平靜持續到清晨", "prob": 0.04, "is_eos": true }
+      ]
+    },
+    "C_L3I": {
+      "next": [
+        { "token_id": "C_L6K", "text": "斷裂聲嚇到你", "prob": 0.64 },
+        { "token_id": "C_L6L", "text": "門外傳來掌聲", "prob": 0.2 },
+        { "token_id": "C_L6M", "text": "掃把復原了", "prob": 0.11 },
+        { "token_id": "EOS_C9", "text": "你決定就此作罷", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L3J": {
+      "next": [
+        { "token_id": "C_L6N", "text": "門縫滲入冷風", "prob": 0.62 },
+        { "token_id": "C_L6O", "text": "看見熟悉身影", "prob": 0.22 },
+        { "token_id": "C_L6P", "text": "門又關上了", "prob": 0.11 },
+        { "token_id": "EOS_C10", "text": "驚魂一夜結束", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L3K": {
+      "next": [
+        { "token_id": "C_L6Q", "text": "室友哈哈大笑", "prob": 0.82 },
+        { "token_id": "C_L6R", "text": "室友遞上奶茶", "prob": 0.1 },
+        { "token_id": "C_L6S", "text": "室友開始直播", "prob": 0.05 },
+        { "token_id": "EOS_C11", "text": "虛驚一場收場", "prob": 0.03, "is_eos": true }
+      ]
+    },
+    "C_L3L": {
+      "next": [
+        { "token_id": "C_L6T", "text": "光劍照亮走廊", "prob": 0.45 },
+        { "token_id": "C_L6U", "text": "光劍突然熄滅", "prob": 0.3 },
+        { "token_id": "C_L6V", "text": "鄰居報警", "prob": 0.18 },
+        { "token_id": "EOS_C12", "text": "傳說就此誕生", "prob": 0.07, "is_eos": true }
+      ]
+    },
+    "C_L3M": {
+      "next": [
+        { "token_id": "C_L6W", "text": "觀眾說看到影子", "prob": 0.55 },
+        { "token_id": "C_L6X", "text": "直播訊號中斷", "prob": 0.25 },
+        { "token_id": "C_L6Y", "text": "彈幕集體沉默", "prob": 0.14 },
+        { "token_id": "EOS_C13", "text": "你關閉了鏡頭", "prob": 0.06, "is_eos": true }
+      ]
+    },
+    "C_L3N": {
+      "next": [
+        { "token_id": "C_L6Z", "text": "觀眾揭穿破綻", "prob": 0.68 },
+        { "token_id": "C_L7A", "text": "劇本越寫越離譜", "prob": 0.18 },
+        { "token_id": "C_L7B", "text": "粉絲數暴增", "prob": 0.1 },
+        { "token_id": "EOS_C14", "text": "鬧劇圓滿落幕", "prob": 0.04, "is_eos": true }
+      ]
+    },
+    "C_L3O": {
+      "next": [
+        { "token_id": "C_L7C", "text": "平台發來警告", "prob": 0.6 },
+        { "token_id": "C_L7D", "text": "觀眾轉戰其他台", "prob": 0.22 },
+        { "token_id": "C_L7E", "text": "你決定下播", "prob": 0.13 },
+        { "token_id": "EOS_C15", "text": "直播生涯暫停", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L3P": {
+      "next": [
+        { "token_id": "C_L7F", "text": "斗內者要求加碼", "prob": 0.5 },
+        { "token_id": "C_L7G", "text": "斗內訊息很詭異", "prob": 0.28 },
+        { "token_id": "C_L7H", "text": "你拒絕了邀請", "prob": 0.15 },
+        { "token_id": "EOS_C16", "text": "你關機睡覺去了", "prob": 0.07, "is_eos": true }
+      ]
+    },
+    "C_L3Q": {
+      "next": [
+        { "token_id": "C_L7I", "text": "你安心入睡", "prob": 0.8 },
+        { "token_id": "C_L7J", "text": "窗外出現微光", "prob": 0.1 },
+        { "token_id": "C_L7K", "text": "鬧鐘響起", "prob": 0.07 },
+        { "token_id": "EOS_C17", "text": "夜色悄然落幕", "prob": 0.03, "is_eos": true }
+      ]
+    },
+    "C_L3R": {
+      "next": [
+        { "token_id": "C_L7L", "text": "鬼影貼近玻璃", "prob": 0.52 },
+        { "token_id": "C_L7M", "text": "你閉上雙眼", "prob": 0.28 },
+        { "token_id": "C_L7N", "text": "鬼影伸出手", "prob": 0.14 },
+        { "token_id": "EOS_C18", "text": "一切歸於黑暗", "prob": 0.06, "is_eos": true }
+      ]
+    },
+    "C_L3S": {
+      "next": [
+        { "token_id": "C_L7O", "text": "你自嘲一笑", "prob": 0.85 },
+        { "token_id": "C_L7P", "text": "衣架又倒了", "prob": 0.08 },
+        { "token_id": "C_L7Q", "text": "決定整理房間", "prob": 0.05 },
+        { "token_id": "EOS_C19", "text": "鬧劇就此收場", "prob": 0.02, "is_eos": true }
+      ]
+    },
+    "C_L3T": {
+      "next": [
+        { "token_id": "C_L7R", "text": "鬼影說出你的名字", "prob": 0.4 },
+        { "token_id": "C_L7S", "text": "鬼影遞來奶茶", "prob": 0.3 },
+        { "token_id": "C_L7T", "text": "鬼影轉身離去", "prob": 0.22 },
+        { "token_id": "EOS_C20", "text": "你永遠記得這夜", "prob": 0.08, "is_eos": true }
+      ]
+    },
+    "C_L3U": {
+      "next": [
+        { "token_id": "C_L7U", "text": "腳步聲遠去", "prob": 0.72 },
+        { "token_id": "C_L7V", "text": "腳步停在門口", "prob": 0.16 },
+        { "token_id": "C_L7W", "text": "窗簾無風自動", "prob": 0.08 },
+        { "token_id": "EOS_C21", "text": "你拉緊被角", "prob": 0.04, "is_eos": true }
+      ]
+    },
+    "C_L3V": {
+      "next": [
+        { "token_id": "C_L7X", "text": "你終於入睡", "prob": 0.83 },
+        { "token_id": "C_L7Y", "text": "夢見敲門聲", "prob": 0.1 },
+        { "token_id": "C_L7Z", "text": "清晨陽光灑入", "prob": 0.05 },
+        { "token_id": "EOS_C22", "text": "平靜的一夜", "prob": 0.02, "is_eos": true }
+      ]
+    },
+    "C_L3W": {
+      "next": [
+        { "token_id": "C_L8A", "text": "窗外空無一物", "prob": 0.6 },
+        { "token_id": "C_L8B", "text": "看見對樓燈光", "prob": 0.22 },
+        { "token_id": "C_L8C", "text": "冷風灌入室內", "prob": 0.13 },
+        { "token_id": "EOS_C23", "text": "你關上窗簾", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L3X": {
+      "next": [
+        { "token_id": "C_L8D", "text": "貓咪蹭你小腿", "prob": 0.88 },
+        { "token_id": "C_L8E", "text": "貓咪打翻奶茶", "prob": 0.07 },
+        { "token_id": "C_L8F", "text": "貓咪叼走掃把", "prob": 0.03 },
+        { "token_id": "EOS_C24", "text": "萌寵治癒收場", "prob": 0.02, "is_eos": true }
+      ]
+    },
+    "C_L3Y": {
+      "next": [
+        { "token_id": "C_L8G", "text": "重影逐漸清晰", "prob": 0.5 },
+        { "token_id": "C_L8H", "text": "照片自動刪除", "prob": 0.28 },
+        { "token_id": "C_L8I", "text": "你備份到雲端", "prob": 0.15 },
+        { "token_id": "EOS_C25", "text": "證據消失無蹤", "prob": 0.07, "is_eos": true }
+      ]
+    },
+    "C_L3Z": {
+      "next": [
+        { "token_id": "C_L8J", "text": "重開相機成功", "prob": 0.65 },
+        { "token_id": "C_L8K", "text": "相機徹底報廢", "prob": 0.2 },
+        { "token_id": "C_L8L", "text": "改用平板拍攝", "prob": 0.1 },
+        { "token_id": "EOS_C26", "text": "你放棄取證", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L4A": {
+      "next": [
+        { "token_id": "C_L8M", "text": "人臉似曾相識", "prob": 0.55 },
+        { "token_id": "C_L8N", "text": "人臉開始模糊", "prob": 0.28 },
+        { "token_id": "C_L8O", "text": "你刪除了照片", "prob": 0.12 },
+        { "token_id": "EOS_C27", "text": "記憶漸漸褪色", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L4B": {
+      "next": [
+        { "token_id": "C_L8P", "text": "雲端顯示異常", "prob": 0.58 },
+        { "token_id": "C_L8Q", "text": "備份完好無損", "prob": 0.25 },
+        { "token_id": "C_L8R", "text": "收到系統通知", "prob": 0.12 },
+        { "token_id": "EOS_C28", "text": "你關閉了通知", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L4C": {
+      "next": [
+        { "token_id": "C_L8S", "text": "膝蓋擦傷流血", "prob": 0.62 },
+        { "token_id": "C_L8T", "text": "手機摔碎螢幕", "prob": 0.22 },
+        { "token_id": "C_L8U", "text": "你爬起繼續跑", "prob": 0.11 },
+        { "token_id": "EOS_C29", "text": "你決定報警", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L4D": {
+      "next": [
+        { "token_id": "C_L8V", "text": "電梯剛好到達", "prob": 0.7 },
+        { "token_id": "C_L8W", "text": "樓梯間很暗", "prob": 0.18 },
+        { "token_id": "C_L8X", "text": "鄰居開門張望", "prob": 0.08 },
+        { "token_id": "EOS_C30", "text": "你逃到街上", "prob": 0.04, "is_eos": true }
+      ]
+    },
+    "C_L4E": {
+      "next": [
+        { "token_id": "C_L8Y", "text": "衣櫃裡很悶", "prob": 0.6 },
+        { "token_id": "C_L8Z", "text": "聽見腳步靠近", "prob": 0.25 },
+        { "token_id": "C_L9A", "text": "手機沒訊號", "prob": 0.1 },
+        { "token_id": "EOS_C31", "text": "你蜷縮到天亮", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "C_L4F": {
+      "next": [
+        { "token_id": "C_L9B", "text": "鄰居前來查看", "prob": 0.75 },
+        { "token_id": "C_L9C", "text": "無人回應", "prob": 0.14 },
+        { "token_id": "C_L9D", "text": "保安上樓巡邏", "prob": 0.08 },
+        { "token_id": "EOS_C32", "text": "眾人散去", "prob": 0.03, "is_eos": true }
+      ]
+    },
+    "C_L4G": {
+      "next": [
+        { "token_id": "C_L9E", "text": "你喝到見底", "prob": 0.78 },
+        { "token_id": "C_L9F", "text": "甜味讓你暈眩", "prob": 0.12 },
+        { "token_id": "C_L9G", "text": "你分享給室友", "prob": 0.07 },
+        { "token_id": "EOS_C33", "text": "奶茶空杯收場", "prob": 0.03, "is_eos": true }
+      ]
+    },
+    "C_L4H": {
+      "next": [
+        { "token_id": "C_L9H", "text": "珍珠排列成字", "prob": 0.42 },
+        { "token_id": "C_L9I", "text": "你倒掉奶茶", "prob": 0.33 },
+        { "token_id": "C_L9J", "text": "珍珠跳出杯子", "prob": 0.18 },
+        { "token_id": "EOS_C34", "text": "你再也不喝珍奶", "prob": 0.07, "is_eos": true }
+      ]
+    },
+    "C_L4I": {
+      "next": [
+        { "token_id": "C_L9K", "text": "警告寫著別喝", "prob": 0.68 },
+        { "token_id": "C_L9L", "text": "你還是喝了", "prob": 0.18 },
+        { "token_id": "C_L9M", "text": "你拍照存證", "prob": 0.1 },
+        { "token_id": "EOS_C35", "text": "你扔進垃圾桶", "prob": 0.04, "is_eos": true }
+      ]
+    },
+    "C_L4J": {
+      "next": [
+        { "token_id": "C_L9N", "text": "你精神百倍", "prob": 0.8 },
+        { "token_id": "C_L9O", "text": "你徹夜未眠", "prob": 0.12 },
+        { "token_id": "C_L9P", "text": "你開始寫程式", "prob": 0.06 },
+        { "token_id": "EOS_C36", "text": "天亮時你完成了專案", "prob": 0.02, "is_eos": true }
+      ]
+    },
+    "C_L5M": {
+      "next": [
+        { "token_id": "EOS_C37", "text": "你滿意地關上門", "prob": 0.85, "is_eos": true },
+        { "token_id": "C_L9Q", "text": "餐點溫度異常", "prob": 0.08 },
+        { "token_id": "C_L9R", "text": "外賣單沒有名字", "prob": 0.05 },
+        { "token_id": "C_L9S", "text": "你給了五星評價", "prob": 0.02 }
+      ]
+    },
+    "C_L5N": {
+      "next": [
+        { "token_id": "EOS_C38", "text": "你不敢接過餐點", "prob": 0.7, "is_eos": true },
+        { "token_id": "C_L9T", "text": "外賣員微笑離開", "prob": 0.15 },
+        { "token_id": "C_L9U", "text": "你關上防盜鏈", "prob": 0.1 },
+        { "token_id": "C_L9V", "text": "你錄下全過程", "prob": 0.05 }
+      ]
+    },
+    "C_L6B": {
+      "next": [
+        { "token_id": "EOS_C39", "text": "你選擇相信訊息", "prob": 0.75, "is_eos": true },
+        { "token_id": "C_L9W", "text": "你還是開了門", "prob": 0.12 },
+        { "token_id": "C_L9X", "text": "你回覆了問號", "prob": 0.08 },
+        { "token_id": "C_L9Y", "text": "訊息自動刪除", "prob": 0.05 }
+      ]
+    },
+    "C_L6Q": {
+      "next": [
+        { "token_id": "EOS_C40", "text": "你們一起喝奶茶", "prob": 0.8, "is_eos": true },
+        { "token_id": "C_L9Z", "text": "室友說還有續集", "prob": 0.12 },
+        { "token_id": "C_L10A", "text": "你們開始打遊戲", "prob": 0.05 },
+        { "token_id": "C_L10B", "text": "你決定搬家", "prob": 0.03 }
+      ]
+    },
+    "C_L7O": {
+      "next": [
+        { "token_id": "EOS_C41", "text": "你關燈睡覺", "prob": 0.9, "is_eos": true },
+        { "token_id": "C_L10C", "text": "你整理衣架", "prob": 0.06 },
+        { "token_id": "C_L10D", "text": "你發了則貼文", "prob": 0.03 },
+        { "token_id": "C_L10E", "text": "你訂了外賣", "prob": 0.01 }
+      ]
+    },
+    "C_L7T": {
+      "next": [
+        { "token_id": "EOS_C42", "text": "鬼影消失在夜色中", "prob": 0.65, "is_eos": true },
+        { "token_id": "C_L10F", "text": "你追出窗外", "prob": 0.2 },
+        { "token_id": "C_L10G", "text": "你寫下這段經歷", "prob": 0.1 },
+        { "token_id": "C_L10H", "text": "你開始相信靈異", "prob": 0.05 }
+      ]
+    },
+    "C_L8D": {
+      "next": [
+        { "token_id": "EOS_C43", "text": "你抱著貓咪入睡", "prob": 0.88, "is_eos": true },
+        { "token_id": "C_L10I", "text": "貓咪夜遊外出", "prob": 0.07 },
+        { "token_id": "C_L10J", "text": "你開罐頭犒賞", "prob": 0.04 },
+        { "token_id": "C_L10K", "text": "你拍下萌照", "prob": 0.01 }
+      ]
+    },
+    "C_L9E": {
+      "next": [
+        { "token_id": "EOS_C44", "text": "空杯見底，故事結束", "prob": 0.82, "is_eos": true },
+        { "token_id": "C_L10L", "text": "你再點一杯", "prob": 0.1 },
+        { "token_id": "C_L10M", "text": "你感到心悸", "prob": 0.05 },
+        { "token_id": "C_L10N", "text": "你寫下食記", "prob": 0.03 }
+      ]
+    }
+  }
+}
