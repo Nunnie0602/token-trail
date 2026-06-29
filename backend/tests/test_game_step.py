@@ -20,7 +20,7 @@ async def test_step_updates_prompt(fake_redis):
         fallback=FallbackService(),
         prefetcher=PrefetchScheduler(BranchCache(fake_redis)),
     )
-    response = await service.execute(
+    response, _ = await service.execute(
         session_id=session.session_id,
         eaten_token_id="C_L1A",
         current_snake_length=2,
@@ -56,7 +56,7 @@ async def test_step_cache_hit(fake_redis):
         fallback=FallbackService(),
         prefetcher=PrefetchScheduler(cache),
     )
-    response = await service.execute(
+    response, _ = await service.execute(
         session_id=session.session_id,
         eaten_token_id="C_L1A",
         current_snake_length=2,
@@ -81,6 +81,76 @@ async def test_step_session_not_found(fake_redis):
             current_snake_length=2,
             trace_id="trace-miss",
         )
+
+
+@pytest.mark.asyncio
+async def test_prefetch_disabled_skips_background_schedule(fake_redis):
+    sessions = SessionManager(fake_redis)
+    session = await sessions.create("classic", "qwen")
+    cache = BranchCache(fake_redis)
+    prefetcher = PrefetchScheduler(cache, enabled=False)
+
+    from app.models.schemas import TokenFood
+
+    cached_tokens = [
+        TokenFood(token_id="X1", text="打開門縫", prob=0.71),
+        TokenFood(token_id="X2", text="裝作沒聽見", prob=0.15),
+        TokenFood(token_id="X3", text="拿起掃把防身", prob=0.09),
+        TokenFood(token_id="X4", text="開始直播求援", prob=0.05),
+    ]
+    await cache.set(session.session_id, "C_L1A", cached_tokens)
+
+    service = GameStepService(
+        sessions=sessions,
+        cache=cache,
+        fallback=FallbackService(),
+        prefetcher=prefetcher,
+    )
+    await service.execute(
+        session_id=session.session_id,
+        eaten_token_id="C_L1A",
+        current_snake_length=2,
+        trace_id="trace-no-prefetch",
+    )
+    await asyncio.sleep(0.05)
+
+    assert await cache.get(session.session_id, "X1") is None
+
+
+@pytest.mark.asyncio
+async def test_step_profile_segments_on_cache_hit(fake_redis):
+    sessions = SessionManager(fake_redis)
+    session = await sessions.create("classic", "qwen")
+    cache = BranchCache(fake_redis)
+
+    from app.models.schemas import TokenFood
+
+    cached_tokens = [
+        TokenFood(token_id="X1", text="打開門縫", prob=0.71),
+        TokenFood(token_id="X2", text="裝作沒聽見", prob=0.15),
+        TokenFood(token_id="X3", text="拿起掃把防身", prob=0.09),
+        TokenFood(token_id="X4", text="開始直播求援", prob=0.05),
+    ]
+    await cache.set(session.session_id, "C_L1A", cached_tokens)
+
+    service = GameStepService(
+        sessions=sessions,
+        cache=cache,
+        fallback=FallbackService(),
+        prefetcher=PrefetchScheduler(cache, enabled=False),
+    )
+    _, profile = await service.execute(
+        session_id=session.session_id,
+        eaten_token_id="C_L1A",
+        current_snake_length=2,
+        trace_id="trace-profile",
+    )
+
+    assert profile.redis_get_ms >= 0
+    assert profile.redis_set_ms >= 0
+    assert profile.business_ms >= 0
+    assert profile.serialization_ms >= 0
+    assert profile.accounted_ms > 0
 
 
 @pytest.mark.asyncio

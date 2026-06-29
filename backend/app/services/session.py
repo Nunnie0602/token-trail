@@ -1,4 +1,5 @@
 import json
+import time
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -65,18 +66,36 @@ class SessionManager:
         return session
 
     async def get(self, session_id: str) -> PlayerSession | None:
+        session, _, _ = await self.get_timed(session_id)
+        return session
+
+    async def get_timed(self, session_id: str) -> tuple[PlayerSession | None, float, float]:
+        redis_started = time.perf_counter()
         raw = await self._redis.get(session_key(session_id))
+        redis_get_ms = (time.perf_counter() - redis_started) * 1000
         if raw is None:
-            return None
-        return PlayerSession.from_dict(json.loads(raw))
+            return None, redis_get_ms, 0.0
+        serialization_started = time.perf_counter()
+        session = PlayerSession.from_dict(json.loads(raw))
+        serialization_ms = (time.perf_counter() - serialization_started) * 1000
+        return session, redis_get_ms, serialization_ms
 
     async def save(self, session: PlayerSession) -> None:
+        await self.save_timed(session)
+
+    async def save_timed(self, session: PlayerSession) -> tuple[float, float]:
+        serialization_started = time.perf_counter()
         session.updated_at = datetime.now(UTC).isoformat()
+        payload = json.dumps(session.to_dict(), ensure_ascii=False)
+        serialization_ms = (time.perf_counter() - serialization_started) * 1000
+        redis_started = time.perf_counter()
         await self._redis.set(
             session_key(session.session_id),
-            json.dumps(session.to_dict(), ensure_ascii=False),
+            payload,
             ex=SESSION_TTL_SECONDS,
         )
+        redis_set_ms = (time.perf_counter() - redis_started) * 1000
+        return serialization_ms, redis_set_ms
 
     async def ttl(self, session_id: str) -> int:
         ttl = await self._redis.ttl(session_key(session_id))

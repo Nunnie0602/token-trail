@@ -7,9 +7,16 @@ from app.services.mock_llm import MockLLM
 
 
 class PrefetchScheduler:
-    def __init__(self, cache: BranchCache, mock_llm: MockLLM | None = None) -> None:
+    def __init__(
+        self,
+        cache: BranchCache,
+        mock_llm: MockLLM | None = None,
+        *,
+        enabled: bool = True,
+    ) -> None:
         self._cache = cache
         self._mock_llm = mock_llm or MockLLM()
+        self._enabled = enabled
 
     async def schedule(
         self,
@@ -20,6 +27,8 @@ class PrefetchScheduler:
         model: ModelProfile,
         branch_token_ids: list[str],
     ) -> None:
+        if not self._enabled:
+            return
         asyncio.create_task(
             self._prefetch_branches(
                 session_id=session_id,

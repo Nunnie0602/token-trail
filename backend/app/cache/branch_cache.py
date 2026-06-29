@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Any
 
 from redis.asyncio import Redis
@@ -12,11 +13,24 @@ class BranchCache:
         self._redis = redis
 
     async def get(self, session_id: str, eaten_token_id: str) -> list[TokenFood] | None:
+        tokens, _, _ = await self.get_timed(session_id, eaten_token_id)
+        return tokens
+
+    async def get_timed(
+        self,
+        session_id: str,
+        eaten_token_id: str,
+    ) -> tuple[list[TokenFood] | None, float, float]:
+        redis_started = time.perf_counter()
         raw = await self._redis.get(prefetch_key(session_id, eaten_token_id))
+        redis_get_ms = (time.perf_counter() - redis_started) * 1000
         if raw is None:
-            return None
+            return None, redis_get_ms, 0.0
+        serialization_started = time.perf_counter()
         payload = json.loads(raw)
-        return [TokenFood.model_validate(item) for item in payload["next_tokens_food"]]
+        tokens = [TokenFood.model_validate(item) for item in payload["next_tokens_food"]]
+        serialization_ms = (time.perf_counter() - serialization_started) * 1000
+        return tokens, redis_get_ms, serialization_ms
 
     async def set(
         self,

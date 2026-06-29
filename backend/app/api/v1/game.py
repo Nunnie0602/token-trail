@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from redis.asyncio import Redis
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
-from app.api.deps import get_game_step_service, get_redis, get_trace_id
+from app.api.deps import get_game_step_service, get_trace_id
 from app.models.schemas import StepRequest, StepResponse
-from app.services.game_step import InvalidTokenError, SessionNotFoundError
+from app.services.game_step import GameStepService, InvalidTokenError, SessionNotFoundError
 
 router = APIRouter(prefix="/game")
 
@@ -12,17 +11,19 @@ router = APIRouter(prefix="/game")
 async def game_step(
     body: StepRequest,
     request: Request,
-    redis: Redis = Depends(get_redis),
+    response: Response,
+    service: GameStepService = Depends(get_game_step_service),
 ) -> StepResponse:
     trace_id = get_trace_id(request)
-    service = get_game_step_service(redis)
     try:
-        return await service.execute(
+        step_response, profile = await service.execute(
             session_id=body.session_id,
             eaten_token_id=body.eaten_token_id,
             current_snake_length=body.current_snake_length,
             trace_id=trace_id,
         )
+        response.headers["X-Step-Profile"] = profile.as_header_value()
+        return step_response
     except SessionNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
