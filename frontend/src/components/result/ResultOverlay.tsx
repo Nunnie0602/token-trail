@@ -1,6 +1,8 @@
 import { useCallback, useState, type ChangeEvent } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+import { isApiEnabled } from "../../api/client";
+import { submitLeaderboard } from "../../api/gameApi";
 import {
   generateDefaultPlayerName,
   PLAYER_NAME_MAX_LENGTH,
@@ -28,7 +30,13 @@ export function ResultOverlay({ session, onRetry }: ResultOverlayProps) {
     [],
   );
 
-  const handleSubmitLeaderboard = useCallback(() => {
+  const handleSubmitLeaderboard = useCallback(async () => {
+    if (isApiEnabled()) {
+      await submitLeaderboard(playerName, session.score, session.sessionId);
+      setSubmitStatus("submitted");
+      return;
+    }
+
     const entry = {
       name: playerName,
       score: session.score,
