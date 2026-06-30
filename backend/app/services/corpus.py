@@ -1,5 +1,6 @@
 import json
 import random
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, cast
@@ -97,25 +98,56 @@ def get_next_tokens(
     return apply_model_overrides(node.next, mode, model)
 
 
+_STUB_PARENT_PATTERN = re.compile(r"^(.+)_S\d+_\d+$")
+_EOS_PARENT_PATTERN = re.compile(r"^(.+)_EOS\d+$")
+
+
+def _parent_token_id(token_id: str) -> str | None:
+    eos_match = _EOS_PARENT_PATTERN.match(token_id)
+    if eos_match:
+        return eos_match.group(1)
+    stub_match = _STUB_PARENT_PATTERN.match(token_id)
+    if stub_match:
+        return stub_match.group(1)
+    return None
+
+
+def _materialize_stub_ancestors(corpus: Corpus, token_id: str) -> None:
+    from app.services.corpus_enricher import materialize_stub_node
+
+    ancestors: list[str] = []
+    current = token_id
+    while current:
+        parent = _parent_token_id(current)
+        if parent is None:
+            break
+        ancestors.append(parent)
+        current = parent
+
+    for ancestor_id in reversed(ancestors):
+        materialize_stub_node(corpus, ancestor_id)
+
+
 def find_token(
     mode: GameMode,
     model: ModelProfile,
     token_id: str,
 ) -> TokenFood | None:
     corpus = load_corpus(mode)
-    for node in corpus.nodes.values():
-        for token in node.next:
-            if token.token_id == token_id:
-                return apply_model_overrides([token], mode, model)[0]
 
-    from app.services.corpus_enricher import materialize_stub_node
+    def lookup() -> TokenFood | None:
+        for node in corpus.nodes.values():
+            for token in node.next:
+                if token.token_id == token_id:
+                    return apply_model_overrides([token], mode, model)[0]
+        return None
 
-    stub = materialize_stub_node(corpus, token_id)
-    if stub:
-        for token in stub.next:
-            if token.token_id == token_id:
-                return apply_model_overrides([token], mode, model)[0]
-    return None
+    found = lookup()
+    if found is not None:
+        return found
+
+    _materialize_stub_ancestors(corpus, token_id)
+    return lookup()
 
 
 def find_token_text(mode: GameMode, model: ModelProfile, token_id: str) -> str | None:

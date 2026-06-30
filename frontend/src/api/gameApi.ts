@@ -42,6 +42,17 @@ export async function postGameStep(body: StepRequestBody): Promise<StepResponse>
   });
 }
 
+export type LeaderboardEntry = {
+  rank: number;
+  player_name: string;
+  score: number;
+  session_id: string;
+};
+
+export type LeaderboardResponse = {
+  entries: LeaderboardEntry[];
+};
+
 export async function submitLeaderboard(
   playerName: string,
   score: number,
@@ -55,4 +66,8 @@ export async function submitLeaderboard(
       session_id: sessionId,
     },
   });
+}
+
+export async function getLeaderboard(): Promise<LeaderboardResponse> {
+  return apiRequest<LeaderboardResponse>("/api/v1/leaderboard");
 }
