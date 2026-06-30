@@ -51,7 +51,9 @@ class GameStepService:
             raise InvalidTokenError(eaten_token_id)
         profile.business_ms += _elapsed_ms(started)
 
-        cached, cache_get_ms, cache_parse_ms = await self._cache.get_timed(session_id, eaten_token_id)
+        cached, cache_get_ms, cache_parse_ms = await self._cache.get_timed(
+            session_id, eaten_token_id
+        )
         profile.redis_get_ms += cache_get_ms
         profile.serialization_ms += cache_parse_ms
         cache_hit = cached is not None

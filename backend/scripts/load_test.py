@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import statistics
 import time
 from dataclasses import dataclass
 from typing import Literal
-
-import json
 
 import httpx
 
@@ -24,7 +23,7 @@ class StepProfileSample:
     serialization_ms: float
 
     @classmethod
-    def from_header(cls, value: str) -> "StepProfileSample":
+    def from_header(cls, value: str) -> StepProfileSample:
         return cls(**json.loads(value))
 
 
