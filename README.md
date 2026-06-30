@@ -1,5 +1,7 @@
 # Token Trail
 
+[![CI](https://github.com/Nunnie0602/token-trail/actions/workflows/ci.yml/badge.svg)](https://github.com/Nunnie0602/token-trail/actions/workflows/ci.yml)
+
 > Visualizing LLM Decoding Through Interactive Gameplay
 
 透過互動式文字貪食蛇，將大型語言模型（LLM）的自迴歸生成（Auto-regressive Generation）與解碼策略（Decoding Strategy）轉譯為可理解、可探索的遊戲體驗。
@@ -137,6 +139,7 @@ token-trail/
 │
 ├── infra/
 │   ├── docker/
+│   ├── scripts/
 │   ├── prometheus/
 │   └── grafana/
 │
@@ -161,17 +164,21 @@ token-trail/
 | POST | /api/v1/leaderboard | 提交排行榜成績 |
 
 # 品質驗證與測試
-本專案實施嚴格的 DoD (Definition of Done)，任何代碼合併皆須通過 GitHub Actions 管線：
-```
-# 1. 執行靜態程式碼檢查 (Linting)
-ruff check .
 
-# 2. 執行型別檢查 (Type Check)
-mypy .
+本專案實施嚴格的 DoD (Definition of Done)，任何代碼合併皆須通過 [GitHub Actions CI](https://github.com/Nunnie0602/token-trail/actions/workflows/ci.yml)（backend：Ruff / MyPy / Pytest；frontend：`npm ci` / test / build）。
 
-# 3. 執行單元與整合測試 (使用 Mock 機制隔離 AI 與 Redis)
-pytest
-```
+## Push 前檢查清單
+
+| 層級 | 命令 | 備註 |
+|------|------|------|
+| 一鍵（建議） | `.\infra\scripts\ci-local.ps1` | Windows；frontend 以 Docker 模擬 Linux CI |
+| 一鍵（Linux/WSL） | `./infra/scripts/ci-local.sh` | 與 Actions 行為一致 |
+| Backend | `cd backend` → `ruff check app tests scripts` → `mypy app` → `pytest -q` | 與 CI 相同 |
+| Frontend（Windows 日常） | `cd frontend` → `npm install` → `npm test -- --run` → `npm run build` | 本地開發用 `npm install`，**勿** `npm ci` |
+| Frontend lock 變更 | `.\infra\scripts\regen-frontend-lock.ps1` | 僅在 `package.json` 變更時；必須在 Linux/Docker 產生 lock |
+
+> **跨平台注意：** `frontend/package-lock.json` 須在 Linux 環境產生（Docker 腳本），Windows 上 `npm install` 會覆寫 Linux optional dependencies，導致 Actions `npm ci` 失敗。
+
 - AI 推理隔離：透過 pytest-mock 針對 Ollama API 呼叫進行 Mock 隔離，強迫其回傳固定的 Logits 分佈，驗證背景排程與安全降級模組的健壯性。
 - Redis 狀態模擬：利用 fakeredis 在記憶體中模擬真實 Redis 的 ZSET 與 String 讀寫，維持 CI 的獨立性與高效速度。
 
