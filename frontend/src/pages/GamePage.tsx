@@ -20,6 +20,8 @@ export function GamePage() {
   const { mode = "classic", model = "qwen" } = (location.state as LocationState) ?? {};
   const {
     session,
+    sessionLoading,
+    cacheHitPercent,
     fpsStats,
     recordFps,
     startSession,
@@ -64,8 +66,8 @@ export function GamePage() {
   }, [session?.nextTokens, session?.status, spawnFoods]);
 
   const handleEatFood = useCallback(
-    (food: PlacedFood) => {
-      const result = eatToken(food);
+    async (food: PlacedFood) => {
+      const result = await eatToken(food);
       if (!result) {
         return;
       }
@@ -110,7 +112,7 @@ export function GamePage() {
     [session?.contextTokens],
   );
 
-  if (!session) {
+  if (!session || sessionLoading) {
     return <div className="loading-state">初始化遊戲中…</div>;
   }
 
@@ -123,6 +125,7 @@ export function GamePage() {
         contextLength={Math.min(session.contextTokens.length, MAX_SNAKE_LENGTH)}
         mode={session.mode}
         model={session.model}
+        cacheHit={cacheHitPercent}
         onModelChange={setModel}
       />
 

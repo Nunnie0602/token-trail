@@ -1,0 +1,282 @@
+{
+  "mode": "qing",
+  "initial_tokens": [
+    { "token_id": "Q_INIT_01", "text": "夜半忽聞" },
+    { "token_id": "Q_INIT_02", "text": "更深人靜" },
+    { "token_id": "Q_INIT_03", "text": "殘燈未滅" }
+  ],
+  "nodes": {
+    "Q_INIT_01": {
+      "next": [
+        { "token_id": "Q_L1A", "text": "叩門聲急", "prob": 0.76 },
+        { "token_id": "Q_L1B", "text": "窗外人影", "prob": 0.12 },
+        { "token_id": "Q_L1C", "text": "聖旨下", "prob": 0.07 },
+        { "token_id": "Q_L1D", "text": "風起簾動", "prob": 0.05 }
+      ]
+    },
+    "Q_INIT_02": {
+      "next": [
+        { "token_id": "Q_L1A", "text": "叩門聲急", "prob": 0.7 },
+        { "token_id": "Q_L1B", "text": "窗外人影", "prob": 0.15 },
+        { "token_id": "Q_L1C", "text": "聖旨下", "prob": 0.1 },
+        { "token_id": "Q_L1D", "text": "風起簾動", "prob": 0.05 }
+      ]
+    },
+    "Q_INIT_03": {
+      "next": [
+        { "token_id": "Q_L1A", "text": "叩門聲急", "prob": 0.68 },
+        { "token_id": "Q_L1B", "text": "窗外人影", "prob": 0.16 },
+        { "token_id": "Q_L1C", "text": "聖旨下", "prob": 0.11 },
+        { "token_id": "Q_L1D", "text": "風起簾動", "prob": 0.05 }
+      ]
+    },
+    "Q_L1A": {
+      "next": [
+        { "token_id": "Q_L2A", "text": "啟扉窺視", "prob": 0.72 },
+        { "token_id": "Q_L2B", "text": "屏息不應", "prob": 0.14 },
+        { "token_id": "Q_L2C", "text": "執燭往視", "prob": 0.1 },
+        { "token_id": "Q_L2D", "text": "喚僕起查", "prob": 0.04 }
+      ]
+    },
+    "Q_L1B": {
+      "next": [
+        { "token_id": "Q_L2E", "text": "凝目細察", "prob": 0.7 },
+        { "token_id": "Q_L2F", "text": "緊閉窗櫺", "prob": 0.16 },
+        { "token_id": "Q_L2G", "text": "秉燭臨窗", "prob": 0.09 },
+        { "token_id": "Q_L2H", "text": "轉身疾退", "prob": 0.05 }
+      ]
+    },
+    "Q_L1C": {
+      "next": [
+        { "token_id": "Q_L2I", "text": "跪接詔書", "prob": 0.78 },
+        { "token_id": "Q_L2J", "text": "疑為偽旨", "prob": 0.12 },
+        { "token_id": "Q_L2K", "text": "遣人打探", "prob": 0.07 },
+        { "token_id": "Q_L2L", "text": "焚香祈禱", "prob": 0.03 }
+      ]
+    },
+    "Q_L1D": {
+      "next": [
+        { "token_id": "Q_L2M", "text": "掀簾外望", "prob": 0.66 },
+        { "token_id": "Q_L2N", "text": "闔窗鎖扉", "prob": 0.18 },
+        { "token_id": "Q_L2O", "text": "聽風辨位", "prob": 0.11 },
+        { "token_id": "Q_L2P", "text": "秉筆記異", "prob": 0.05 }
+      ]
+    },
+    "Q_L2A": {
+      "next": [
+        { "token_id": "Q_L3A", "text": "見一青衣立", "prob": 0.74 },
+        { "token_id": "Q_L3B", "text": "門外空無人", "prob": 0.13 },
+        { "token_id": "Q_L3C", "text": "地上遺奏摺", "prob": 0.09 },
+        { "token_id": "Q_L3D", "text": "門環自鳴", "prob": 0.04 }
+      ]
+    },
+    "Q_L2B": {
+      "next": [
+        { "token_id": "Q_L3E", "text": "叩聲愈急", "prob": 0.65 },
+        { "token_id": "Q_L3F", "text": "牆外傳呼", "prob": 0.18 },
+        { "token_id": "Q_L3G", "text": "鄰戶驚起", "prob": 0.12 },
+        { "token_id": "Q_L3H", "text": "四寂無聲", "prob": 0.05 }
+      ]
+    },
+    "Q_L2C": {
+      "next": [
+        { "token_id": "Q_L3I", "text": "燭焰忽搖", "prob": 0.62 },
+        { "token_id": "Q_L3J", "text": "門縫滲風", "prob": 0.22 },
+        { "token_id": "Q_L3K", "text": "見僕臥門側", "prob": 0.11 },
+        { "token_id": "Q_L3L", "text": "燭火頓滅", "prob": 0.05 }
+      ]
+    },
+    "Q_L2D": {
+      "next": [
+        { "token_id": "Q_L3M", "text": "僕稱無人", "prob": 0.7 },
+        { "token_id": "Q_L3N", "text": "僕面有懼色", "prob": 0.16 },
+        { "token_id": "Q_L3O", "text": "僕辭不往", "prob": 0.1 },
+        { "token_id": "Q_L3P", "text": "僕叩頭不止", "prob": 0.04 }
+      ]
+    },
+    "Q_L2E": {
+      "next": [
+        { "token_id": "Q_L3Q", "text": "人影倏忽沒", "prob": 0.71 },
+        { "token_id": "Q_L3R", "text": "人影漸近", "prob": 0.15 },
+        { "token_id": "Q_L3S", "text": "原是樹影", "prob": 0.1 },
+        { "token_id": "Q_L3T", "text": "人影作語", "prob": 0.04 }
+      ]
+    },
+    "Q_L2F": {
+      "next": [
+        { "token_id": "Q_L3U", "text": "窗外腳步聲", "prob": 0.68 },
+        { "token_id": "Q_L3V", "text": "風止夜闌", "prob": 0.18 },
+        { "token_id": "Q_L3W", "text": "窗櫺自開", "prob": 0.1 },
+        { "token_id": "Q_L3X", "text": "貓躍簾外", "prob": 0.04 }
+      ]
+    },
+    "Q_L2I": {
+      "next": [
+        { "token_id": "Q_L3Y", "text": "誦詔謝恩", "prob": 0.8 },
+        { "token_id": "Q_L3Z", "text": "詔書字跡模糊", "prob": 0.1 },
+        { "token_id": "Q_L4A", "text": "詔書無印", "prob": 0.07 },
+        { "token_id": "Q_L4B", "text": "詔書有異香", "prob": 0.03 }
+      ]
+    },
+    "Q_L2J": {
+      "next": [
+        { "token_id": "Q_L4C", "text": "遣人查驗", "prob": 0.6 },
+        { "token_id": "Q_L4D", "text": "暫且藏匿", "prob": 0.22 },
+        { "token_id": "Q_L4E", "text": "焚旨滅跡", "prob": 0.12 },
+        { "token_id": "Q_L4F", "text": "上疏陳情", "prob": 0.06 }
+      ]
+    },
+    "Q_L2M": {
+      "next": [
+        { "token_id": "Q_L4G", "text": "見巷口燈滅", "prob": 0.65 },
+        { "token_id": "Q_L4H", "text": "聞遠處更鼓", "prob": 0.2 },
+        { "token_id": "Q_L4I", "text": "風捲落葉", "prob": 0.1 },
+        { "token_id": "Q_L4J", "text": "見飛鳥墜地", "prob": 0.05 }
+      ]
+    },
+    "Q_L3A": {
+      "next": [
+        { "token_id": "Q_L4K", "text": "青衣遞文書", "prob": 0.75 },
+        { "token_id": "Q_L4L", "text": "青衣無語立", "prob": 0.14 },
+        { "token_id": "Q_L4M", "text": "青衣倏然逝", "prob": 0.07 },
+        { "token_id": "Q_EOS_01", "text": "事畢闔門", "prob": 0.04, "is_eos": true }
+      ]
+    },
+    "Q_L3B": {
+      "next": [
+        { "token_id": "Q_L4N", "text": "地上有泥印", "prob": 0.63 },
+        { "token_id": "Q_L4O", "text": "門環復響", "prob": 0.2 },
+        { "token_id": "Q_L4P", "text": "風過無痕", "prob": 0.12 },
+        { "token_id": "Q_EOS_02", "text": "夜色歸寂", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "Q_L3C": {
+      "next": [
+        { "token_id": "Q_L4Q", "text": "奏摺無署名", "prob": 0.58 },
+        { "token_id": "Q_L4R", "text": "摺中僅數言", "prob": 0.24 },
+        { "token_id": "Q_L4S", "text": "摺中藏密詔", "prob": 0.13 },
+        { "token_id": "Q_EOS_03", "text": "摺付火中", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "Q_L3E": {
+      "next": [
+        { "token_id": "Q_L4T", "text": "門板欲裂", "prob": 0.55 },
+        { "token_id": "Q_L4U", "text": "叩聲有節", "prob": 0.25 },
+        { "token_id": "Q_L4V", "text": "忽轉叩窗", "prob": 0.14 },
+        { "token_id": "Q_EOS_04", "text": "五更天白", "prob": 0.06, "is_eos": true }
+      ]
+    },
+    "Q_L3F": {
+      "next": [
+        { "token_id": "Q_L4W", "text": "呼聲似宮人", "prob": 0.62 },
+        { "token_id": "Q_L4X", "text": "呼聲漸遠", "prob": 0.22 },
+        { "token_id": "Q_L4Y", "text": "無人應答", "prob": 0.11 },
+        { "token_id": "Q_EOS_05", "text": "更鼓聲斷", "prob": 0.05, "is_eos": true }
+      ]
+    },
+    "Q_L3H": {
+      "next": [
+        { "token_id": "Q_L4Z", "text": "心下稍安", "prob": 0.78 },
+        { "token_id": "Q_L5A", "text": "燈焰微顫", "prob": 0.12 },
+        { "token_id": "Q_L5B", "text": "簾角自揚", "prob": 0.07 },
+        { "token_id": "Q_EOS_06", "text": "伏枕而眠", "prob": 0.03, "is_eos": true }
+      ]
+    },
+    "Q_L3I": {
+      "next": [
+        { "token_id": "Q_L5C", "text": "見門縫有光", "prob": 0.6 },
+        { "token_id": "Q_L5D", "text": "燭復明穩", "prob": 0.22 },
+        { "token_id": "Q_L5E", "text": "聞紙頁翻聲", "prob": 0.12 },
+        { "token_id": "Q_EOS_07", "text": "吹燭就寢", "prob": 0.06, "is_eos": true }
+      ]
+    },
+    "Q_L3K": {
+      "next": [
+        { "token_id": "Q_L5F", "text": "僕稱夢遊", "prob": 0.72 },
+        { "token_id": "Q_L5G", "text": "僕面有血痕", "prob": 0.15 },
+        { "token_id": "Q_L5H", "text": "僕辭不詳", "prob": 0.1 },
+        { "token_id": "Q_EOS_08", "text": "令僕退下", "prob": 0.03, "is_eos": true }
+      ]
+    },
+    "Q_L3Q": {
+      "next": [
+        { "token_id": "Q_L5I", "text": "闔窗歇息", "prob": 0.82 },
+        { "token_id": "Q_L5J", "text": "秉燭夜讀", "prob": 0.1 },
+        { "token_id": "Q_L5K", "text": "記異於冊", "prob": 0.06 },
+        { "token_id": "Q_EOS_09", "text": "東方既白", "prob": 0.02, "is_eos": true }
+      ]
+    },
+    "Q_L3R": {
+      "next": [
+        { "token_id": "Q_L5L", "text": "人影貼窗", "prob": 0.5 },
+        { "token_id": "Q_L5M", "text": "閉目不視", "prob": 0.28 },
+        { "token_id": "Q_L5N", "text": "人影叩窗", "prob": 0.15 },
+        { "token_id": "Q_EOS_10", "text": "長夜難明", "prob": 0.07, "is_eos": true }
+      ]
+    },
+    "Q_L3S": {
+      "next": [
+        { "token_id": "Q_L5O", "text": "自嘲一笑", "prob": 0.85 },
+        { "token_id": "Q_L5P", "text": "移樹剪枝", "prob": 0.08 },
+        { "token_id": "Q_L5Q", "text": "秉燭寫詩", "prob": 0.05 },
+        { "token_id": "Q_EOS_11", "text": "虛驚一場", "prob": 0.02, "is_eos": true }
+      ]
+    },
+    "Q_L3T": {
+      "next": [
+        { "token_id": "Q_L5R", "text": "人影呼名", "prob": 0.42 },
+        { "token_id": "Q_L5S", "text": "人影遞茶", "prob": 0.3 },
+        { "token_id": "Q_L5T", "text": "人影化風", "prob": 0.2 },
+        { "token_id": "Q_EOS_12", "text": "此夜難忘", "prob": 0.08, "is_eos": true }
+      ]
+    },
+    "Q_L3Y": {
+      "next": [
+        { "token_id": "Q_L5U", "text": "設香案謝恩", "prob": 0.8 },
+        { "token_id": "Q_L5V", "text": "詔書藏匣", "prob": 0.12 },
+        { "token_id": "Q_L5W", "text": "傳示家眷", "prob": 0.06 },
+        { "token_id": "Q_EOS_13", "text": "恩詔事了", "prob": 0.02, "is_eos": true }
+      ]
+    },
+    "Q_L4K": {
+      "next": [
+        { "token_id": "Q_EOS_14", "text": "接文謝過", "prob": 0.8, "is_eos": true },
+        { "token_id": "Q_L5X", "text": "文書字跡詭", "prob": 0.1 },
+        { "token_id": "Q_L5Y", "text": "文書無封", "prob": 0.07 },
+        { "token_id": "Q_L5Z", "text": "文書有異香", "prob": 0.03 }
+      ]
+    },
+    "Q_L4Q": {
+      "next": [
+        { "token_id": "Q_EOS_15", "text": "摺付火中", "prob": 0.7, "is_eos": true },
+        { "token_id": "Q_L6A", "text": "摺中藏密令", "prob": 0.15 },
+        { "token_id": "Q_L6B", "text": "摺中空白", "prob": 0.1 },
+        { "token_id": "Q_L6C", "text": "摺中血書", "prob": 0.05 }
+      ]
+    },
+    "Q_L4Z": {
+      "next": [
+        { "token_id": "Q_EOS_16", "text": "伏枕入眠", "prob": 0.88, "is_eos": true },
+        { "token_id": "Q_L6D", "text": "夢見叩門", "prob": 0.07 },
+        { "token_id": "Q_L6E", "text": "聞雞人起", "prob": 0.04 },
+        { "token_id": "Q_L6F", "text": "秉燭夜思", "prob": 0.01 }
+      ]
+    },
+    "Q_L5O": {
+      "next": [
+        { "token_id": "Q_EOS_17", "text": "移燈就寢", "prob": 0.9, "is_eos": true },
+        { "token_id": "Q_L6G", "text": "秉筆記之", "prob": 0.06 },
+        { "token_id": "Q_L6H", "text": "喚僕剪燭", "prob": 0.03 },
+        { "token_id": "Q_L6I", "text": "臨窗望月", "prob": 0.01 }
+      ]
+    },
+    "Q_L5U": {
+      "next": [
+        { "token_id": "Q_EOS_18", "text": "恩詔圓滿", "prob": 0.85, "is_eos": true },
+        { "token_id": "Q_L6J", "text": "詔書再至", "prob": 0.08 },
+        { "token_id": "Q_L6K", "text": "宮人復來", "prob": 0.05 },
+        { "token_id": "Q_L6L", "text": "焚香未盡", "prob": 0.02 }
+      ]
+    }
+  }
+}

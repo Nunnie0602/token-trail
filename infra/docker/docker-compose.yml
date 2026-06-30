@@ -30,6 +30,10 @@ services:
       OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://frontend:3000}
+      PREFETCH_ENABLED: ${PREFETCH_ENABLED:-true}
+      REDIS_MAX_CONNECTIONS: ${REDIS_MAX_CONNECTIONS:-200}
+      LOG_STEP_CACHE_HIT: ${LOG_STEP_CACHE_HIT:-true}
+      UVICORN_WORKERS: ${UVICORN_WORKERS:-4}
     depends_on:
       redis:
         condition: service_healthy

@@ -15,6 +15,7 @@ export type StepResponse = {
   current_temperature: number;
   snake_speed_multiplier: number;
   next_tokens_food: TokenFood[];
+  cache_hit?: boolean;
 };
 
 export type CorpusNode = {
