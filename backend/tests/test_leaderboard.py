@@ -1,8 +1,8 @@
 import pytest
 from app.models.schemas import StepRecord
 from app.services.leaderboard import LeaderboardService
-from app.services.result import FinalizeService, ResultManager, generate_result
-from app.services.session import PlayerSession, SessionManager
+from app.services.result import ResultManager, generate_result
+from app.services.session import PlayerSession
 
 
 @pytest.mark.asyncio

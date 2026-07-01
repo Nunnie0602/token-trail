@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
-from app.api.deps import get_finalize_service, get_game_step_service, get_result_manager, get_trace_id
+from app.api.deps import (
+    get_finalize_service,
+    get_game_step_service,
+    get_result_manager,
+    get_trace_id,
+)
 from app.models.schemas import FinalizeRequest, GameResult, StepRequest, StepResponse
 from app.services.game_step import GameStepService, InvalidTokenError, SessionNotFoundError
 from app.services.result import (

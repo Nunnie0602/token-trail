@@ -10,7 +10,10 @@ def decode_personality(probs: list[float]) -> tuple[str, str]:
     if average_prob >= 0.7:
         return (
             "Greedy Searcher",
-            "你偏好高機率路徑，解碼策略接近 Greedy Search——穩健、可預測，擅長跟隨模型最自信的 token。",
+            (
+                "你偏好高機率路徑，解碼策略接近 Greedy Search——"
+                "穩健、可預測，擅長跟隨模型最自信的 token。"
+            ),
         )
 
     if average_prob < 0.2:

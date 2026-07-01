@@ -1,5 +1,4 @@
 import pytest
-
 from tests.test_e2e_game_flow import _play_until_ended
 
 

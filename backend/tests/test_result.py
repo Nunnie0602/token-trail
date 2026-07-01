@@ -1,4 +1,5 @@
 import pytest
+from app.models.schemas import StepRecord
 from app.services.leaderboard import LeaderboardService
 from app.services.result import (
     FinalizeService,
@@ -6,7 +7,6 @@ from app.services.result import (
     generate_result,
 )
 from app.services.session import PlayerSession, SessionManager
-from app.models.schemas import StepRecord
 
 
 def _sample_session(**overrides) -> PlayerSession:
@@ -218,7 +218,6 @@ async def test_finalize_rejects_client_story_path(client):
 
 @pytest.mark.asyncio
 async def test_leaderboard_ignores_client_score_inflation(fake_redis):
-    sessions = SessionManager(fake_redis)
     results = ResultManager(fake_redis)
     session = _sample_session(game_status="ENDED")
     result = generate_result(session, "eos")
@@ -233,7 +232,6 @@ async def test_leaderboard_ignores_client_score_inflation(fake_redis):
 
 @pytest.mark.asyncio
 async def test_leaderboard_rejects_non_eos(fake_redis):
-    sessions = SessionManager(fake_redis)
     results = ResultManager(fake_redis)
     session = _sample_session(game_status="COLLISION_FAILED")
     result = generate_result(session, "collision", "collision")
