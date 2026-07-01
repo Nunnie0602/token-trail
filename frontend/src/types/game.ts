@@ -1,6 +1,8 @@
 export type GameMode = "classic" | "qing";
 export type ModelProfile = "qwen" | "gemini";
-export type GameStatus = "PLAYING" | "ENDED" | "GAME_OVER";
+export type GameStatus = "PLAYING" | "ENDED" | "COLLISION_FAILED" | "ABORTED";
+export type GameCompletionType = "eos" | "collision" | "voluntary_exit" | "api_error";
+export type TerminalGameStatus = "ENDED" | "COLLISION_FAILED" | "ABORTED";
 
 export type TokenFood = {
   token_id: string;
@@ -67,6 +69,33 @@ export type GameSession = {
   currentTemperature: number;
   currentNodeId: string | null;
   nextTokens: TokenFood[];
+};
+
+export type StepRecord = {
+  step_index: number;
+  token_id: string;
+  text: string;
+  prob: number;
+  temperature: number;
+  is_eos: boolean;
+};
+
+export type GameResult = {
+  session_id: string;
+  terminal_game_status: TerminalGameStatus;
+  completion_type: GameCompletionType;
+  failure_reason?: string;
+  mode: GameMode;
+  model: ModelProfile;
+  score: number;
+  snake_length: number;
+  story_path: string[];
+  chosen_probs: number[];
+  temperature_history: number[];
+  step_history: StepRecord[];
+  personality_type: string;
+  personality_description: string;
+  created_at: string;
 };
 
 export type Point = {

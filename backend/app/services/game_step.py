@@ -4,10 +4,11 @@ from app.cache.branch_cache import BranchCache
 from app.core.config import settings
 from app.core.logging import logger
 from app.core.step_profile import StepProfile
-from app.models.schemas import StepResponse
+from app.models.schemas import StepRecord, StepResponse
 from app.services.corpus import find_token
 from app.services.fallback import FallbackService
 from app.services.prefetcher import PrefetchScheduler
+from app.services.result import FinalizeService
 from app.services.session import SessionManager
 from app.services.temperature import derive_speed_multiplier, derive_temperature
 
@@ -23,11 +24,13 @@ class GameStepService:
         cache: BranchCache,
         fallback: FallbackService,
         prefetcher: PrefetchScheduler,
+        finalize: FinalizeService | None = None,
     ) -> None:
         self._sessions = sessions
         self._cache = cache
         self._fallback = fallback
         self._prefetcher = prefetcher
+        self._finalize = finalize
 
     async def execute(
         self,
@@ -92,6 +95,16 @@ class GameStepService:
         session.current_temperature = temperature
         session.current_node_id = eaten_token_id
         session.score += round(eaten_token.prob * 100)
+        session.step_history.append(
+            StepRecord(
+                step_index=current_snake_length,
+                token_id=eaten_token_id,
+                text=eaten_token.text,
+                prob=eaten_token.prob,
+                temperature=temperature,
+                is_eos=is_eos,
+            )
+        )
 
         if is_eos:
             session.game_status = "ENDED"
@@ -103,6 +116,9 @@ class GameStepService:
         session_save_ms, session_set_ms = await self._sessions.save_timed(session)
         profile.serialization_ms += session_save_ms
         profile.redis_set_ms += session_set_ms
+
+        if is_eos and self._finalize is not None:
+            await self._finalize.finalize_eos(session)
 
         started = time.perf_counter()
         if not is_eos and next_tokens:

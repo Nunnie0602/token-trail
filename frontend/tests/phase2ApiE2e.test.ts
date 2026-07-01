@@ -9,6 +9,7 @@ import type { GameSession, TokenFood } from "../src/types/game";
 import {
   e2eCreateSession,
   e2eGetLeaderboard,
+  e2eGetResult,
   e2eHealthCheck,
   e2ePostGameStep,
   e2eSubmitLeaderboard,
@@ -84,16 +85,18 @@ describeE2e("Phase 2 API E2E", () => {
 
   it("P2-T23: leaderboard submit after settlement is visible on GET", async () => {
     const session = await playApiGameUntilEnded("classic", "qwen");
+    const result = await e2eGetResult(session.sessionId);
     const playerName = `E2E_${Date.now().toString(36)}`;
 
-    await e2eSubmitLeaderboard(playerName, session.score, session.sessionId);
+    await e2eSubmitLeaderboard(playerName, 999999, session.sessionId);
 
     const listing = await e2eGetLeaderboard();
     const match = listing.entries.find(
       (entry) => entry.player_name === playerName && entry.session_id === session.sessionId,
     );
     expect(match).toBeDefined();
-    expect(match?.score).toBe(session.score);
+    expect(match?.score).toBe(result.score);
+    expect(match?.score).not.toBe(999999);
   });
 
   it("P2-T22: step responses expose cache_hit header contract", async () => {

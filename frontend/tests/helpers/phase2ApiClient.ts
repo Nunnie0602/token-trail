@@ -32,6 +32,12 @@ export type LeaderboardResponse = {
   entries: LeaderboardEntry[];
 };
 
+export type E2eGameResult = {
+  session_id: string;
+  score: number;
+  completion_type: string;
+};
+
 function readProcessEnv(key: string): string | undefined {
   const runtime = globalThis as {
     process?: { env?: Record<string, string | undefined> };
@@ -117,6 +123,10 @@ export async function e2eSubmitLeaderboard(
 
 export async function e2eGetLeaderboard(): Promise<LeaderboardResponse> {
   return e2eRequest<LeaderboardResponse>("/api/v1/leaderboard");
+}
+
+export async function e2eGetResult(sessionId: string): Promise<E2eGameResult> {
+  return e2eRequest<E2eGameResult>(`/api/v1/game/result/${sessionId}`);
 }
 
 export function pickToken(tokens: TokenFood[], preferEos: boolean): TokenFood {

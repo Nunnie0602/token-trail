@@ -2,11 +2,13 @@ from redis.asyncio import Redis
 
 from app.cache.keys import LEADERBOARD_KEY
 from app.models.schemas import LeaderboardEntry
+from app.services.result import LeaderboardNotEligibleError, ResultManager, ResultNotFoundError
 
 
 class LeaderboardService:
-    def __init__(self, redis: Redis) -> None:
+    def __init__(self, redis: Redis, results: ResultManager) -> None:
         self._redis = redis
+        self._results = results
 
     @staticmethod
     def _member(player_name: str, session_id: str) -> str:
@@ -20,8 +22,15 @@ class LeaderboardService:
         return member, ""
 
     async def submit(self, player_name: str, score: int, session_id: str) -> None:
+        result = await self._results.get(session_id)
+        if result is None:
+            raise ResultNotFoundError(session_id)
+        if result.completion_type != "eos":
+            raise LeaderboardNotEligibleError(session_id, result.completion_type)
+
+        authoritative_score = result.score
         member = self._member(player_name, session_id)
-        await self._redis.zadd(LEADERBOARD_KEY, {member: score})
+        await self._redis.zadd(LEADERBOARD_KEY, {member: authoritative_score})
 
     async def top(self, limit: int = 100) -> list[LeaderboardEntry]:
         raw = await self._redis.zrevrange(LEADERBOARD_KEY, 0, limit - 1, withscores=True)

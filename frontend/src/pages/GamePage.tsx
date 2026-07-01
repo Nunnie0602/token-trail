@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { isApiEnabled } from "../api/client";
+import { finalizeGame } from "../api/gameApi";
+import { usePlayingSessionExit } from "../hooks/usePlayingSessionExit";
 import { createPlacedFoods, GameCanvas } from "../components/game/GameCanvas";
 import { LiveDashboard } from "../components/dashboard/LiveDashboard";
 import { Footer } from "../components/layout/Footer";
@@ -18,6 +21,7 @@ export function GamePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { mode = "classic", model = "qwen" } = (location.state as LocationState) ?? {};
+  const useApi = isApiEnabled();
   const {
     session,
     sessionLoading,
@@ -33,7 +37,15 @@ export function GamePage() {
 
   const [placedFoods, setPlacedFoods] = useState<PlacedFood[]>([]);
   const [gameOverMessage, setGameOverMessage] = useState<string | null>(null);
+  const [finalizing, setFinalizing] = useState(false);
   const engineRef = useRef<SnakeEngine | null>(null);
+  const skipExitFinalizeRef = useRef(false);
+
+  usePlayingSessionExit({
+    enabled: useApi,
+    session,
+    skipFinalizeRef: skipExitFinalizeRef,
+  });
 
   useEffect(() => {
     if (!session) {
@@ -42,10 +54,10 @@ export function GamePage() {
   }, [session, mode, model, startSession]);
 
   useEffect(() => {
-    if (session?.status === "ENDED") {
-      navigate("/result", { replace: true });
+    if (session?.status === "ENDED" && session.sessionId) {
+      navigate(`/result/${session.sessionId}`, { replace: true });
     }
-  }, [session?.status, navigate]);
+  }, [session?.status, session?.sessionId, navigate]);
 
   const spawnFoods = useCallback((tokens: TokenFood[]) => {
     if (!tokens || tokens.length === 0) {
@@ -71,9 +83,15 @@ export function GamePage() {
       if (!result) {
         return;
       }
+      if (result.stepFailed) {
+        skipExitFinalizeRef.current = true;
+        navigate(`/result/${result.session.sessionId}`, { replace: true });
+        return;
+      }
       if (result.isEos) {
+        skipExitFinalizeRef.current = true;
         setPlacedFoods([]);
-        navigate("/result", { replace: true });
+        navigate(`/result/${result.session.sessionId}`, { replace: true });
         return;
       }
       if (result.session.nextTokens.length > 0) {
@@ -95,14 +113,39 @@ export function GamePage() {
     [session?.status, session?.nextTokens, spawnFoods],
   );
 
-  const handleCollision = useCallback(() => {
+  const handleCollision = useCallback(async () => {
+    if (!session) {
+      return;
+    }
+
+    if (useApi) {
+      setFinalizing(true);
+      setGameOverMessage("撞牆或咬到自己！正在產生結算報告…");
+      skipExitFinalizeRef.current = true;
+      try {
+        await finalizeGame({
+          session_id: session.sessionId,
+          completion_type: "collision",
+          failure_reason: "collision",
+        });
+        navigate(`/result/${session.sessionId}`, { replace: true });
+      } catch {
+        setGameOverMessage("結算失敗，請重試或返回首頁。");
+        setFinalizing(false);
+        skipExitFinalizeRef.current = false;
+      }
+      return;
+    }
+
     triggerGameOver();
     setGameOverMessage("撞牆或咬到自己！遊戲結束。");
-  }, [triggerGameOver]);
+    navigate(`/result/${session.sessionId}`, { replace: true });
+  }, [session, useApi, navigate, triggerGameOver]);
 
   const handleRetry = useCallback(() => {
     resetSession();
     setGameOverMessage(null);
+    setFinalizing(false);
     engineRef.current = null;
     startSession(session?.mode ?? mode, session?.model ?? model);
   }, [resetSession, startSession, session, mode, model]);
@@ -116,7 +159,8 @@ export function GamePage() {
     return <div className="loading-state">初始化遊戲中…</div>;
   }
 
-  const showGameOver = session.status === "GAME_OVER";
+  const showGameOver =
+    session.status === "COLLISION_FAILED" || finalizing || Boolean(gameOverMessage);
 
   return (
     <div className="game-layout">
@@ -144,12 +188,16 @@ export function GamePage() {
           {showGameOver && (
             <div className="game-over-panel">
               <p>{gameOverMessage}</p>
-              <button type="button" onClick={handleRetry}>
-                重試
-              </button>
-              <button type="button" onClick={() => navigate("/")}>
-                返回首頁
-              </button>
+              {!finalizing && (
+                <>
+                  <button type="button" onClick={handleRetry}>
+                    重試
+                  </button>
+                  <button type="button" onClick={() => navigate("/")}>
+                    返回首頁
+                  </button>
+                </>
+              )}
             </div>
           )}
         </section>

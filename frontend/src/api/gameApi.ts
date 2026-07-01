@@ -1,6 +1,8 @@
 import { apiRequest } from "./client";
 import type {
+  GameCompletionType,
   GameMode,
+  GameResult,
   GameStatus,
   ModelProfile,
   StepResponse,
@@ -40,6 +42,25 @@ export async function postGameStep(body: StepRequestBody): Promise<StepResponse>
     method: "POST",
     body,
   });
+}
+
+export type FinalizeRequestBody = {
+  session_id: string;
+  completion_type: GameCompletionType;
+  failure_reason?: string;
+};
+
+export async function finalizeGame(
+  body: FinalizeRequestBody,
+): Promise<GameResult | null> {
+  return apiRequest<GameResult | null>("/api/v1/game/finalize", {
+    method: "POST",
+    body,
+  });
+}
+
+export async function getResult(sessionId: string): Promise<GameResult> {
+  return apiRequest<GameResult>(`/api/v1/game/result/${sessionId}`);
 }
 
 export type LeaderboardEntry = {

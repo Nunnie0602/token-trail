@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from redis.asyncio import Redis
 
 from app.cache.keys import SESSION_TTL_SECONDS, session_key
-from app.models.schemas import GameMode, GameStatus, ModelProfile, TokenFood
+from app.models.schemas import GameMode, GameStatus, ModelProfile, StepRecord, TokenFood
 from app.services.corpus import get_next_tokens, pick_initial_token
 
 
@@ -22,13 +22,21 @@ class PlayerSession:
     snake_length: int
     current_node_id: str | None
     score: int
+    step_history: list[StepRecord]
     updated_at: str
 
-    def to_dict(self) -> dict[str, str | int | float | None]:
-        return asdict(self)
+    def to_dict(self) -> dict[str, object]:
+        data = asdict(self)
+        data["step_history"] = [record.model_dump() for record in self.step_history]
+        return data
 
     @classmethod
     def from_dict(cls, data: dict[str, object]) -> "PlayerSession":
+        raw_history = data.get("step_history", [])
+        step_history = [
+            StepRecord.model_validate(record)
+            for record in (raw_history if isinstance(raw_history, list) else [])
+        ]
         return cls(
             session_id=str(data["session_id"]),
             mode=str(data["mode"]),  # type: ignore[arg-type]
@@ -39,6 +47,7 @@ class PlayerSession:
             snake_length=int(str(data["snake_length"])),
             current_node_id=str(data["current_node_id"]) if data.get("current_node_id") else None,
             score=int(str(data.get("score", 0))),
+            step_history=step_history,
             updated_at=str(data["updated_at"]),
         )
 
@@ -60,6 +69,7 @@ class SessionManager:
             snake_length=1,
             current_node_id=initial["token_id"],
             score=0,
+            step_history=[],
             updated_at=now,
         )
         await self.save(session)
@@ -100,6 +110,9 @@ class SessionManager:
     async def ttl(self, session_id: str) -> int:
         ttl = await self._redis.ttl(session_key(session_id))
         return int(ttl)
+
+    async def delete(self, session_id: str) -> None:
+        await self._redis.delete(session_key(session_id))
 
     def initial_next_tokens(self, session: PlayerSession) -> list[TokenFood]:
         if session.current_node_id is None:

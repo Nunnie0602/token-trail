@@ -27,7 +27,7 @@ describe("ResultOverlay", () => {
   it("P1-T12: shows story when game ended", () => {
     render(
       <MemoryRouter>
-        <ResultOverlay session={endedSession} />
+        <ResultOverlay session={endedSession} completionType="eos" />
       </MemoryRouter>,
     );
     expect(screen.getByTestId("result-overlay")).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe("ResultOverlay", () => {
   it("shows signature field and leaderboard actions per PRD §3.3", () => {
     render(
       <MemoryRouter>
-        <ResultOverlay session={endedSession} />
+        <ResultOverlay session={endedSession} completionType="eos" />
       </MemoryRouter>,
     );
     expect(screen.getByTestId("player-name-input")).toBeInTheDocument();
@@ -49,7 +49,7 @@ describe("ResultOverlay", () => {
   it("submits player name to local leaderboard mock", () => {
     render(
       <MemoryRouter>
-        <ResultOverlay session={endedSession} />
+        <ResultOverlay session={endedSession} completionType="eos" />
       </MemoryRouter>,
     );
     const input = screen.getByTestId("player-name-input");
@@ -61,5 +61,15 @@ describe("ResultOverlay", () => {
     );
     expect(stored[0].name).toBe("低調的四庫全書編纂官");
     expect(stored[0].score).toBe(120);
+  });
+
+  it("hides leaderboard actions for non-eos completion", () => {
+    render(
+      <MemoryRouter>
+        <ResultOverlay session={endedSession} completionType="collision" />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByTestId("submit-leaderboard-btn")).not.toBeInTheDocument();
+    expect(screen.getByTestId("leaderboard-disabled-note")).toBeInTheDocument();
   });
 });

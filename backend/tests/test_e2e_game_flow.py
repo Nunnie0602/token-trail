@@ -76,15 +76,16 @@ async def test_full_game_flow_qing_mode(client):
 @pytest.mark.asyncio
 async def test_leaderboard_after_full_game(client):
     session_id, _, _ = await _play_until_ended(client)
-    session = await client.get(f"/api/v1/session/{session_id}")
-    assert session.status_code == 200
-    score = max(session.json().get("score", 1), 1)
+
+    result = await client.get(f"/api/v1/game/result/{session_id}")
+    assert result.status_code == 200
+    authoritative_score = result.json()["score"]
 
     submit = await client.post(
         "/api/v1/leaderboard",
         json={
             "player_name": "E2E_Player",
-            "score": max(score, 1),
+            "score": 999999,
             "session_id": session_id,
         },
     )
@@ -93,7 +94,11 @@ async def test_leaderboard_after_full_game(client):
     listing = await client.get("/api/v1/leaderboard")
     assert listing.status_code == 200
     entries = listing.json()["entries"]
-    assert any(
-        entry["player_name"] == "E2E_Player" and entry["session_id"] == session_id
+    matched = [
+        entry
         for entry in entries
-    )
+        if entry["player_name"] == "E2E_Player" and entry["session_id"] == session_id
+    ]
+    assert matched
+    assert matched[0]["score"] == authoritative_score
+    assert matched[0]["score"] != 999999
