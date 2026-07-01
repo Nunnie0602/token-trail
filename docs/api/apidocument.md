@@ -1,6 +1,6 @@
 # Token Trail API 文件
 
-> 版本：0.2.0 | 對照 PRD §7.1 | Phase 2 後端整合  
+> 版本：0.3.1 | 對照 PRD §7.1 | Phase 2.5 結算與防作弊  
 > **本文件為 API 契約唯一來源（Single Source of Truth）**；修改 `backend/app/api/` 時須同步更新。
 
 ## 1. 總覽
@@ -26,7 +26,9 @@
 
 ```typescript
 type GameMode = "classic" | "qing";
-type GameStatus = "PLAYING" | "ENDED" | "GAME_OVER";
+type GameStatus = "PLAYING" | "ENDED" | "COLLISION_FAILED" | "ABORTED";
+type TerminalGameStatus = "ENDED" | "COLLISION_FAILED" | "ABORTED";
+type GameCompletionType = "eos" | "collision" | "voluntary_exit" | "api_error";
 type ModelProfile = "qwen" | "gemini";
 
 type TokenFood = {
@@ -34,6 +36,15 @@ type TokenFood = {
   text: string;
   prob: number;       // 0.0 ~ 1.0
   is_eos?: boolean;   // 預設 false
+};
+
+type StepRecord = {
+  step_index: number;   // 1-based，與 snake_length 對齊
+  token_id: string;
+  text: string;
+  prob: number;
+  temperature: number;
+  is_eos: boolean;
 };
 ```
 
@@ -218,17 +229,67 @@ Session 不存在或 Redis TTL 過期（30 分鐘）時回傳 404。
 
 **副作用：**
 
-1. 更新 Session：`current_prompt`（追加文字）、`snake_length`、`current_temperature`、`current_node_id`、`score`
-2. 若 `game_status` 仍為 `PLAYING`，背景啟動 Prefetch Task，平行預載 4 個新分支至 Redis
+1. 更新 Session：`current_prompt`、`snake_length`、`current_temperature`、`current_node_id`、`score`
+2. **append** `StepRecord` 至 `step_history`（伺服器權威決策序列）
+3. `score += round(prob × 100)`（唯一計分規則）
+4. 吃下 EOS 時自動寫入 `result:{session_id}`（自包含結算，TTL 7 天）
+5. 若 `game_status` 仍為 `PLAYING`，背景啟動 Prefetch Task
 
 **業務規則：**
 
-- 吃下 `is_eos: true` 的 Token → `game_status: "ENDED"`，`next_tokens_food: []`
-- `GAME_OVER`（撞牆）由前端本地處理，不透過此 API
+- 吃下 `is_eos: true` 的 Token → `game_status: "ENDED"`，`next_tokens_food: []`，同步產生 `GameResult`
+- 碰撞（`COLLISION_FAILED`）由前端呼叫 `POST /game/finalize` 觸發結算
+- StepResponse **不回傳** `score`；GET Session **不暴露** `score`
 
 ---
 
-## 5. Leaderboard API
+## 5. Finalize & Result API
+
+### `POST /api/v1/game/finalize`
+
+非 EOS 或需明確確認的終局情境觸發結算。**僅接受**結束原因，不接受客戶端 `story_path` / `score` 等可偽造欄位（多餘欄位 → 422）。
+
+**Request Body**
+
+```json
+{
+  "session_id": "fb6a8b12-9c34",
+  "completion_type": "collision",
+  "failure_reason": "collision"
+}
+```
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| session_id | string | 是 | Session ID |
+| completion_type | GameCompletionType | 是 | `eos` / `collision` / `voluntary_exit` / `api_error` |
+| failure_reason | string | 否 | `ABORTED` 時區分 `voluntary_exit` / `tab_closed` / `api_error` |
+
+**Response 201** — `GameResult`（見 §7.3）
+
+**Response 204** — `voluntary_exit` 且 `snake_length < 3`：銷毀 Session，不產生 Result
+
+**錯誤回應**
+
+| 狀態碼 | 條件 |
+|--------|------|
+| 404 | Session 不存在 |
+| 409 | Session 已處於不可 finalize 的終局狀態 |
+| 422 | 無效 completion_type 或含禁止欄位 |
+
+---
+
+### `GET /api/v1/game/result/{session_id}`
+
+讀取自包含結算資料。Session 過期後仍可查詢（7 天內）。
+
+**Response 200** — `GameResult`
+
+**Response 404** — Result 不存在或已過期
+
+---
+
+## 6. Leaderboard API
 
 ### `POST /api/v1/leaderboard`
 
@@ -247,10 +308,19 @@ Session 不存在或 Redis TTL 過期（30 分鐘）時回傳 404。
 | 欄位 | 型別 | 必填 | 說明 |
 |------|------|------|------|
 | player_name | string | 是 | 1–32 字元 |
-| score | integer | 是 | ≥ 0 |
+| score | integer | 是 | ≥ 0，**已棄用**：後端忽略，改讀 `GameResult.score` |
 | session_id | string | 是 | 對應遊戲 Session |
 
+**資格門檻：** 僅 `completion_type === "eos"` 且 `result:{session_id}` 存在時可提交。
+
 **Response 204** — 無 Response Body
+
+**錯誤回應**
+
+| 狀態碼 | 條件 |
+|--------|------|
+| 404 | Result 不存在 |
+| 409 | 非 EOS 完賽（如 collision） |
 
 ---
 
@@ -282,7 +352,7 @@ Session 不存在或 Redis TTL 過期（30 分鐘）時回傳 404。
 
 ---
 
-## 6. 端點總表
+## 7. 端點總表
 
 | Method | Endpoint | 說明 | 成功狀態碼 |
 |--------|----------|------|------------|
@@ -290,35 +360,41 @@ Session 不存在或 Redis TTL 過期（30 分鐘）時回傳 404。
 | POST | `/api/v1/session` | 建立 Session | 201 |
 | GET | `/api/v1/session/{session_id}` | 查詢 Session | 200 |
 | POST | `/api/v1/game/step` | 執行玩家操作（吃 Token） | 200 |
-| POST | `/api/v1/leaderboard` | 提交排行榜成績 | 204 |
+| POST | `/api/v1/game/finalize` | 觸發結算（非 EOS / 棄賽） | 201 / 204 |
+| GET | `/api/v1/game/result/{session_id}` | 讀取結算 Result | 200 |
+| POST | `/api/v1/leaderboard` | 提交排行榜成績（僅 EOS） | 204 |
 | GET | `/api/v1/leaderboard` | 取得 Top 100 | 200 |
 
 ---
 
-## 7. Redis 資料模型
+## 8. Redis 資料模型
 
 | 用途 | 鍵格式 | 值格式 | TTL |
 |------|--------|--------|-----|
-| Player Session | `session:{session_id}` | JSON（見下表） | 1800s（30 分鐘） |
+| Player Session | `session:{session_id}` | JSON（見 §8.1） | 1800s（30 分鐘） |
+| Game Result | `result:{session_id}` | JSON（見 §8.3） | 604800s（7 天） |
 | Branch Cache | `prefetch:{session_id}:{eaten_token_id}` | `{ "next_tokens_food": [...] }` | 1800s（30 分鐘） |
-| Leaderboard | `global:leaderboard` | ZSET，score = 分數 | 無 |
+| Leaderboard | `global:leaderboard` | ZSET，score = 伺服器權威分數 | 無 |
 
-### 7.1 Session JSON 欄位
+### 8.1 Session JSON 欄位
 
 | 欄位 | 型別 | 說明 |
 |------|------|------|
 | session_id | string | Session ID |
 | mode | GameMode | 遊戲模式 |
 | model | ModelProfile | 模型風格 |
-| game_status | GameStatus | 遊戲狀態 |
+| game_status | GameStatus | `PLAYING` / `ENDED` / `COLLISION_FAILED` / `ABORTED` |
 | current_prompt | string | 累積 Context 文本 |
 | current_temperature | float | 動態溫度 |
 | snake_length | int | 蛇身長度 |
 | current_node_id | string \| null | 當前語料節點 |
-| score | int | 累計得分 |
+| score | int | 伺服器權威累計得分 |
+| step_history | StepRecord[] | 每步決策紀錄 |
 | updated_at | string | ISO 8601 時間戳 |
 
-### 7.2 Leaderboard ZSET Member 格式
+> GET Session 回應**不含** `score` 與 `step_history`（防窺探／防篡改）。
+
+### 8.2 Leaderboard ZSET Member 格式
 
 ```
 {player_name}|{session_id}
@@ -326,22 +402,70 @@ Session 不存在或 Redis TTL 過期（30 分鐘）時回傳 404。
 
 範例：`PlayerA|fb6a8b12-9c34`
 
+### 8.3 GameResult JSON 欄位
+
+| 欄位 | 型別 | 說明 |
+|------|------|------|
+| session_id | string | Session ID |
+| terminal_game_status | TerminalGameStatus | 精準終局狀態 |
+| completion_type | GameCompletionType | 分析用歸類 |
+| failure_reason | string \| null | 失敗原因（選填） |
+| mode | GameMode | 遊戲模式 |
+| model | ModelProfile | 模型風格 |
+| score | int | 取自 Session，伺服器權威 |
+| snake_length | int | 終局蛇身長度 |
+| story_path | string[] | 由 `step_history[].text` 衍生 |
+| chosen_probs | number[] | 由 `step_history[].prob` 衍生 |
+| temperature_history | number[] | 由 `step_history[].temperature` 衍生 |
+| step_history | StepRecord[] | 完整逐步紀錄 |
+| personality_type | string | Personality Decoder 類型 |
+| personality_description | string | 解碼描述 |
+| created_at | string | ISO 8601 |
+
 ---
 
-## 8. 典型遊戲流程
+## 9. 典型遊戲流程
+
+**EOS 完賽：**
 
 ```
-1. POST /api/v1/session          → 取得 session_id + 初始 next_tokens_food
-2. [前端] 玩家移動蛇吃下候選 Token
-3. POST /api/v1/game/step        → 取得下一輪 next_tokens_food（cache_hit 標記）
-4. 重複 2–3 直到 game_status = "ENDED"
-5. POST /api/v1/leaderboard      → 提交結算成績
-6. GET  /api/v1/leaderboard      → 顯示排行榜（選用）
+1. POST /api/v1/session
+2. POST /api/v1/game/step（重複至 game_status = "ENDED"）
+3. GET  /api/v1/game/result/{session_id}   → 結算頁
+4. POST /api/v1/leaderboard                → 僅 EOS 可提交
 ```
+
+**碰撞失敗：**
+
+```
+1–2. 同上（至撞牆）
+3. POST /api/v1/game/finalize { completion_type: "collision" }
+4. GET  /api/v1/game/result/{session_id}   → 展示解碼報告，不可上榜
+```
+
+**主動離場（F2）／分頁關閉（F3）：**
+
+```
+completion_type: "voluntary_exit"
+failure_reason: "voluntary_exit" | "tab_closed"
+```
+
+| 情境 | 前端觸發 | 門檻 |
+|------|----------|------|
+| SPA 導離 `/game` | `finalizeGame`（`useBlocker`） | `snake_length < 3` → 204，銷毀 Session |
+| 分頁關閉 | `navigator.sendBeacon` → `POST /finalize` | 同上 |
+
+**Step API 失敗（F4）：**
+
+```
+POST /api/v1/game/finalize { completion_type: "api_error", failure_reason: "api_error" }
+```
+
+後端唯讀既有 `step_history`（失敗前最後成功步），前端導向 `/result/:session_id`。
 
 ---
 
-## 9. 可觀測性（Structlog）
+## 10. 可觀測性（Structlog）
 
 Step 相關請求輸出 JSON 結構化日誌，必含 `session_id` 與 `trace_id`。
 
@@ -356,22 +480,29 @@ Step 相關請求輸出 JSON 結構化日誌，必含 `session_id` 與 `trace_id
 
 ---
 
-## 10. 前端整合備註
+## 11. 前端整合備註
 
 前端透過環境變數 `VITE_API_BASE_URL` 啟用 API 模式（例：`http://localhost:8000`）。
 
 | 前端模組 | 對應 API |
 |----------|----------|
-| `frontend/src/api/gameApi.ts` → `createSession()` | `POST /api/v1/session` |
-| `frontend/src/api/gameApi.ts` → `postGameStep()` | `POST /api/v1/game/step` |
-| `frontend/src/api/gameApi.ts` → `submitLeaderboard()` | `POST /api/v1/leaderboard` |
+| `gameApi.ts` → `createSession()` | `POST /api/v1/session` |
+| `gameApi.ts` → `postGameStep()` | `POST /api/v1/game/step` |
+| `gameApi.ts` → `finalizeGame()` | `POST /api/v1/game/finalize` |
+| `sessionFinalize.ts` → `sendFinalizeBeacon()` | `POST /api/v1/game/finalize`（Beacon） |
+| `gameApi.ts` → `getResult()` | `GET /api/v1/game/result/{id}` |
+| `gameApi.ts` → `submitLeaderboard()` | `POST /api/v1/leaderboard` |
+
+結算頁路由：`/result/:sessionId`，API 模式以 `GET /game/result/{id}` 驅動 UI。
 
 未設定 `VITE_API_BASE_URL` 時，前端維持 Phase 1 本地語料模式。
 
 ---
 
-## 11. 變更紀錄
+## 12. 變更紀錄
 
 | 版本 | 日期 | 說明 |
 |------|------|------|
+| 0.3.1 | 2026-07-01 | F2/F3 離場 Beacon finalize、F4 Step API 失敗 api_error 路徑 |
+| 0.3.0 | 2026-07-01 | Phase 2.5：step_history、finalize/result、排行榜伺服器權威、非 EOS 結算 |
 | 0.2.0 | 2026-06-25 | Phase 2 初版：Session / Step / Leaderboard / Health |

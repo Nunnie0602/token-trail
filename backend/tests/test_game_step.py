@@ -5,7 +5,46 @@ from app.cache.branch_cache import BranchCache
 from app.services.fallback import FallbackService
 from app.services.game_step import GameStepService, SessionNotFoundError
 from app.services.prefetcher import PrefetchScheduler
+from app.services.result import FinalizeService, ResultManager
 from app.services.session import SessionManager
+
+
+def _build_step_service(fake_redis, *, cache=None, prefetcher=None) -> GameStepService:
+    sessions = SessionManager(fake_redis)
+    results = ResultManager(fake_redis)
+    finalize = FinalizeService(sessions, results)
+    branch_cache = cache or BranchCache(fake_redis)
+    scheduler = prefetcher or PrefetchScheduler(branch_cache)
+    return GameStepService(
+        sessions=sessions,
+        cache=branch_cache,
+        fallback=FallbackService(),
+        prefetcher=scheduler,
+        finalize=finalize,
+    )
+
+
+@pytest.mark.asyncio
+async def test_step_accumulates_history_and_score(fake_redis):
+    sessions = SessionManager(fake_redis)
+    session = await sessions.create("classic", "qwen")
+    service = _build_step_service(fake_redis)
+
+    await service.execute(
+        session_id=session.session_id,
+        eaten_token_id="C_L1A",
+        current_snake_length=2,
+        trace_id="trace-history",
+    )
+
+    updated = await sessions.get(session.session_id)
+    assert updated is not None
+    assert len(updated.step_history) == 1
+    record = updated.step_history[0]
+    assert record.step_index == 2
+    assert record.token_id == "C_L1A"
+    assert record.text == "聽見敲門"
+    assert updated.score == round(record.prob * 100)
 
 
 @pytest.mark.asyncio
@@ -14,12 +53,7 @@ async def test_step_updates_prompt(fake_redis):
     session = await sessions.create("classic", "qwen")
     original_prompt = session.current_prompt
 
-    service = GameStepService(
-        sessions=sessions,
-        cache=BranchCache(fake_redis),
-        fallback=FallbackService(),
-        prefetcher=PrefetchScheduler(BranchCache(fake_redis)),
-    )
+    service = _build_step_service(fake_redis)
     response, _ = await service.execute(
         session_id=session.session_id,
         eaten_token_id="C_L1A",
@@ -50,12 +84,7 @@ async def test_step_cache_hit(fake_redis):
     ]
     await cache.set(session.session_id, "C_L1A", cached_tokens)
 
-    service = GameStepService(
-        sessions=sessions,
-        cache=cache,
-        fallback=FallbackService(),
-        prefetcher=PrefetchScheduler(cache),
-    )
+    service = _build_step_service(fake_redis, cache=cache, prefetcher=PrefetchScheduler(cache))
     response, _ = await service.execute(
         session_id=session.session_id,
         eaten_token_id="C_L1A",
@@ -68,12 +97,7 @@ async def test_step_cache_hit(fake_redis):
 
 @pytest.mark.asyncio
 async def test_step_session_not_found(fake_redis):
-    service = GameStepService(
-        sessions=SessionManager(fake_redis),
-        cache=BranchCache(fake_redis),
-        fallback=FallbackService(),
-        prefetcher=PrefetchScheduler(BranchCache(fake_redis)),
-    )
+    service = _build_step_service(fake_redis)
     with pytest.raises(SessionNotFoundError):
         await service.execute(
             session_id="missing",
@@ -100,12 +124,7 @@ async def test_prefetch_disabled_skips_background_schedule(fake_redis):
     ]
     await cache.set(session.session_id, "C_L1A", cached_tokens)
 
-    service = GameStepService(
-        sessions=sessions,
-        cache=cache,
-        fallback=FallbackService(),
-        prefetcher=prefetcher,
-    )
+    service = _build_step_service(fake_redis, cache=cache, prefetcher=prefetcher)
     await service.execute(
         session_id=session.session_id,
         eaten_token_id="C_L1A",
@@ -133,10 +152,9 @@ async def test_step_profile_segments_on_cache_hit(fake_redis):
     ]
     await cache.set(session.session_id, "C_L1A", cached_tokens)
 
-    service = GameStepService(
-        sessions=sessions,
+    service = _build_step_service(
+        fake_redis,
         cache=cache,
-        fallback=FallbackService(),
         prefetcher=PrefetchScheduler(cache, enabled=False),
     )
     _, profile = await service.execute(

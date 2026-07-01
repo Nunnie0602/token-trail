@@ -10,6 +10,7 @@ from app.services.fallback import FallbackService
 from app.services.game_step import GameStepService
 from app.services.leaderboard import LeaderboardService
 from app.services.prefetcher import PrefetchScheduler
+from app.services.result import FinalizeService, ResultManager
 from app.services.session import SessionManager
 
 
@@ -21,13 +22,27 @@ def get_trace_id(request: Request) -> str:
     return getattr(request.state, "trace_id", str(uuid.uuid4()))
 
 
+def build_result_manager(redis: Redis) -> ResultManager:
+    return ResultManager(redis)
+
+
+def build_finalize_service(redis: Redis) -> FinalizeService:
+    sessions = SessionManager(redis)
+    results = ResultManager(redis)
+    return FinalizeService(sessions, results)
+
+
 def build_game_step_service(redis: Redis) -> GameStepService:
     cache = BranchCache(redis)
+    sessions = SessionManager(redis)
+    results = ResultManager(redis)
+    finalize = FinalizeService(sessions, results)
     return GameStepService(
-        sessions=SessionManager(redis),
+        sessions=sessions,
         cache=cache,
         fallback=FallbackService(),
         prefetcher=PrefetchScheduler(cache, enabled=settings.prefetch_enabled),
+        finalize=finalize,
     )
 
 
@@ -42,9 +57,28 @@ def get_session_manager(redis: Redis) -> SessionManager:
     return SessionManager(redis)
 
 
-def get_branch_cache(redis: Redis) -> BranchCache:
-    return BranchCache(redis)
+def get_result_manager_from_redis(redis: Redis) -> ResultManager:
+    return ResultManager(redis)
 
 
-def get_leaderboard_service(redis: Redis) -> LeaderboardService:
-    return LeaderboardService(redis)
+def get_finalize_service_from_redis(redis: Redis) -> FinalizeService:
+    sessions = SessionManager(redis)
+    return FinalizeService(sessions, ResultManager(redis))
+
+
+def get_result_manager(request: Request) -> ResultManager:
+    return ResultManager(get_redis(request))
+
+
+def get_finalize_service(request: Request) -> FinalizeService:
+    redis = get_redis(request)
+    return FinalizeService(SessionManager(redis), ResultManager(redis))
+
+
+def get_leaderboard_service_from_redis(redis: Redis) -> LeaderboardService:
+    return LeaderboardService(redis, ResultManager(redis))
+
+
+def get_leaderboard_service(request: Request) -> LeaderboardService:
+    redis = get_redis(request)
+    return LeaderboardService(redis, ResultManager(redis))

@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { isApiEnabled } from "../api/client";
-import { createSession, postGameStep } from "../api/gameApi";
+import { createSession, finalizeGame, postGameStep } from "../api/gameApi";
 import {
   createGameSession,
   markGameOver,
@@ -98,21 +98,42 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return result;
       }
 
-      const step = await postGameStep({
-        session_id: session.sessionId,
-        eaten_token_id: food.token_id,
-        current_snake_length: session.contextTokens.length + 1,
-      });
-      setCacheHitPercent(step.cache_hit ? 100 : 0);
+      try {
+        const step = await postGameStep({
+          session_id: session.sessionId,
+          eaten_token_id: food.token_id,
+          current_snake_length: session.contextTokens.length + 1,
+        });
+        setCacheHitPercent(step.cache_hit ? 100 : 0);
 
-      const updated = applyStepResponse(session, food, step);
-      const result: EatTokenResult = {
-        session: updated,
-        evictedToken: null,
-        isEos: step.game_status === "ENDED",
-      };
-      setSession(updated);
-      return result;
+        const updated = applyStepResponse(session, food, step);
+        const result: EatTokenResult = {
+          session: updated,
+          evictedToken: null,
+          isEos: step.game_status === "ENDED",
+        };
+        setSession(updated);
+        return result;
+      } catch {
+        try {
+          await finalizeGame({
+            session_id: session.sessionId,
+            completion_type: "api_error",
+            failure_reason: "api_error",
+          });
+        } catch {
+          /* result may be unavailable if session already expired */
+        }
+
+        const aborted: GameSession = { ...session, status: "ABORTED" };
+        setSession(aborted);
+        return {
+          session: aborted,
+          evictedToken: null,
+          isEos: false,
+          stepFailed: true,
+        };
+      }
     },
     [session, useApi],
   );

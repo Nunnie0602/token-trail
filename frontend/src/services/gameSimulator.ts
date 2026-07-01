@@ -46,6 +46,7 @@ export type EatTokenResult = {
   session: GameSession;
   evictedToken: string | null;
   isEos: boolean;
+  stepFailed?: boolean;
 };
 
 export function processTokenEaten(
@@ -92,5 +93,5 @@ export function processTokenEaten(
 }
 
 export function markGameOver(session: GameSession): GameSession {
-  return { ...session, status: "GAME_OVER" };
+  return { ...session, status: "COLLISION_FAILED" };
 }
