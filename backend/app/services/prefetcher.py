@@ -1,21 +1,21 @@
 import asyncio
 
+from app.ai.inference import InferenceService
 from app.cache.branch_cache import BranchCache
 from app.core.logging import logger
 from app.models.schemas import GameMode, ModelProfile, TokenFood
-from app.services.mock_llm import MockLLM
 
 
 class PrefetchScheduler:
     def __init__(
         self,
         cache: BranchCache,
-        mock_llm: MockLLM | None = None,
+        inference: InferenceService | None = None,
         *,
         enabled: bool = True,
     ) -> None:
         self._cache = cache
-        self._mock_llm = mock_llm or MockLLM()
+        self._inference = inference or InferenceService()
         self._enabled = enabled
 
     async def schedule(
@@ -25,7 +25,8 @@ class PrefetchScheduler:
         trace_id: str,
         mode: GameMode,
         model: ModelProfile,
-        branch_token_ids: list[str],
+        current_prompt: str,
+        branch_tokens: list[TokenFood],
     ) -> None:
         if not self._enabled:
             return
@@ -35,7 +36,8 @@ class PrefetchScheduler:
                 trace_id=trace_id,
                 mode=mode,
                 model=model,
-                branch_token_ids=branch_token_ids,
+                current_prompt=current_prompt,
+                branch_tokens=branch_tokens,
             )
         )
 
@@ -46,12 +48,34 @@ class PrefetchScheduler:
         trace_id: str,
         mode: GameMode,
         model: ModelProfile,
-        branch_token_ids: list[str],
+        current_prompt: str,
+        branch_tokens: list[TokenFood],
     ) -> None:
         try:
+            tasks = [
+                self._prefetch_one(
+                    session_id=session_id,
+                    mode=mode,
+                    model=model,
+                    current_prompt=current_prompt,
+                    branch=branch,
+                )
+                for branch in branch_tokens[:4]
+                if not branch.is_eos
+            ]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
             branches: dict[str, list[TokenFood]] = {}
-            for token_id in branch_token_ids[:4]:
-                tokens = await self._mock_llm.predict_next_tokens(mode, model, token_id)
+            for result in results:
+                if isinstance(result, BaseException):
+                    logger.warning(
+                        "prefetch_branch_failed",
+                        session_id=session_id,
+                        trace_id=trace_id,
+                        error=str(result),
+                    )
+                    continue
+                token_id, tokens = result
                 if tokens:
                     branches[token_id] = tokens
 
@@ -71,18 +95,38 @@ class PrefetchScheduler:
                 error=str(exc),
             )
 
+    async def _prefetch_one(
+        self,
+        *,
+        session_id: str,
+        mode: GameMode,
+        model: ModelProfile,
+        current_prompt: str,
+        branch: TokenFood,
+    ) -> tuple[str, list[TokenFood]]:
+        story_context = f"{current_prompt}{branch.text}"
+        tokens = await self._inference.predict_next_tokens(
+            prompt=story_context,
+            mode=mode,
+            model=model,
+            corpus_token_id=branch.token_id,
+        )
+        return branch.token_id, tokens
+
     async def seed_branches(
         self,
         *,
         session_id: str,
         mode: GameMode,
         model: ModelProfile,
-        branch_token_ids: list[str],
+        current_prompt: str,
+        branch_tokens: list[TokenFood],
     ) -> None:
         await self._prefetch_branches(
             session_id=session_id,
             trace_id="seed",
             mode=mode,
             model=model,
-            branch_token_ids=branch_token_ids,
+            current_prompt=current_prompt,
+            branch_tokens=branch_tokens,
         )

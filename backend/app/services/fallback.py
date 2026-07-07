@@ -1,7 +1,7 @@
+from app.ai.inference import InferenceService
 from app.core.logging import logger
 from app.models.schemas import GameMode, ModelProfile, TokenFood
-from app.services.corpus import find_token_text, get_next_tokens
-from app.services.mock_llm import MockLLM
+from app.services.corpus import get_next_tokens
 
 FALLBACK_SAFE_TOKENS: dict[GameMode, list[TokenFood]] = {
     "classic": [
@@ -20,8 +20,8 @@ FALLBACK_SAFE_TOKENS: dict[GameMode, list[TokenFood]] = {
 
 
 class FallbackService:
-    def __init__(self, mock_llm: MockLLM | None = None) -> None:
-        self._mock_llm = mock_llm or MockLLM()
+    def __init__(self, inference: InferenceService | None = None) -> None:
+        self._inference = inference or InferenceService()
 
     async def resolve(
         self,
@@ -30,23 +30,27 @@ class FallbackService:
         trace_id: str,
         mode: GameMode,
         model: ModelProfile,
+        current_prompt: str,
         eaten_token_id: str,
-        use_sync_mock: bool = True,
+        eaten_text: str,
     ) -> list[TokenFood]:
-        if use_sync_mock:
-            tokens = await self._mock_llm.predict_next_tokens(mode, model, eaten_token_id)
-            if tokens:
-                logger.info(
-                    "fallback_mock_inference",
-                    session_id=session_id,
-                    trace_id=trace_id,
-                    eaten_token_id=eaten_token_id,
-                    source="mock_llm",
-                )
-                return tokens
+        story_context = f"{current_prompt}{eaten_text}"
+        tokens = await self._inference.predict_next_tokens(
+            prompt=story_context,
+            mode=mode,
+            model=model,
+            corpus_token_id=eaten_token_id,
+        )
+        if tokens:
+            logger.info(
+                "fallback_inference_resolved",
+                session_id=session_id,
+                trace_id=trace_id,
+                eaten_token_id=eaten_token_id,
+            )
+            return tokens
 
         safe = list(FALLBACK_SAFE_TOKENS[mode])
-        eaten_text = find_token_text(mode, model, eaten_token_id)
         if eaten_text:
             safe[0] = TokenFood(
                 token_id=safe[0].token_id,

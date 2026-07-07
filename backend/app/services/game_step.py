@@ -6,11 +6,16 @@ from app.core.logging import logger
 from app.core.step_profile import StepProfile
 from app.models.schemas import StepRecord, StepResponse
 from app.services.corpus import find_token
+from app.services.decoding import (
+    derive_speed_multiplier,
+    derive_temperature,
+    initial_prompt_segment,
+    rebuild_sliding_prompt,
+)
 from app.services.fallback import FallbackService
 from app.services.prefetcher import PrefetchScheduler
 from app.services.result import FinalizeService
 from app.services.session import SessionManager
-from app.services.temperature import derive_speed_multiplier, derive_temperature
 
 
 def _elapsed_ms(started: float) -> float:
@@ -77,7 +82,9 @@ class GameStepService:
                 trace_id=trace_id,
                 mode=session.mode,
                 model=session.model,
+                current_prompt=session.current_prompt,
                 eaten_token_id=eaten_token_id,
+                eaten_text=eaten_token.text,
             )
             logger.info(
                 "step_cache_miss",
@@ -89,22 +96,26 @@ class GameStepService:
 
         started = time.perf_counter()
         is_eos = eaten_token.is_eos
-        temperature = derive_temperature(eaten_token.prob)
-        session.current_prompt = f"{session.current_prompt}{eaten_token.text}"
+        prior_history = list(session.step_history)
+        initial_text = initial_prompt_segment(session.current_prompt, prior_history)
+        temperature = derive_temperature(
+            eaten_token.prob,
+            current=session.current_temperature,
+        )
+        new_record = StepRecord(
+            step_index=current_snake_length,
+            token_id=eaten_token_id,
+            text=eaten_token.text,
+            prob=eaten_token.prob,
+            temperature=temperature,
+            is_eos=is_eos,
+        )
+        session.step_history.append(new_record)
+        session.current_prompt = rebuild_sliding_prompt(initial_text, session.step_history)
         session.snake_length = current_snake_length
         session.current_temperature = temperature
         session.current_node_id = eaten_token_id
         session.score += round(eaten_token.prob * 100)
-        session.step_history.append(
-            StepRecord(
-                step_index=current_snake_length,
-                token_id=eaten_token_id,
-                text=eaten_token.text,
-                prob=eaten_token.prob,
-                temperature=temperature,
-                is_eos=is_eos,
-            )
-        )
 
         if is_eos:
             session.game_status = "ENDED"
@@ -122,13 +133,13 @@ class GameStepService:
 
         started = time.perf_counter()
         if not is_eos and next_tokens:
-            branch_ids = [token.token_id for token in next_tokens if not token.is_eos]
             await self._prefetcher.schedule(
                 session_id=session_id,
                 trace_id=trace_id,
                 mode=session.mode,
                 model=session.model,
-                branch_token_ids=branch_ids,
+                current_prompt=session.current_prompt,
+                branch_tokens=next_tokens,
             )
         profile.business_ms += _elapsed_ms(started)
 

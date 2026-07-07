@@ -173,18 +173,21 @@ async def test_step_profile_segments_on_cache_hit(fake_redis):
 
 @pytest.mark.asyncio
 async def test_prefetch_writes_branches(fake_redis):
+
     sessions = SessionManager(fake_redis)
     session = await sessions.create("classic", "qwen")
     cache = BranchCache(fake_redis)
     prefetcher = PrefetchScheduler(cache)
+    next_tokens = sessions.initial_next_tokens(session)
 
     await prefetcher.seed_branches(
         session_id=session.session_id,
         mode="classic",
         model="qwen",
-        branch_token_ids=["C_L1A", "C_L1B", "C_L1C", "C_L1D"],
+        current_prompt=session.current_prompt,
+        branch_tokens=next_tokens,
     )
     await asyncio.sleep(0.05)
 
-    assert await cache.get(session.session_id, "C_L1A") is not None
-    assert await cache.get(session.session_id, "C_L1B") is not None
+    for token in next_tokens:
+        assert await cache.get(session.session_id, token.token_id) is not None

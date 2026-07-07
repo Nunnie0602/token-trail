@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     redis_max_connections: int = 200
     ollama_host: str = "http://localhost:11434"
+    ollama_model: str = "qwen2:1.5b"
+    inference_enabled: bool = True
+    inference_timeout_seconds: float = 8.0
     log_level: str = "INFO"
     log_step_cache_hit: bool = True
     cors_origins: str = "http://localhost:3000"

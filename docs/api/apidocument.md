@@ -61,7 +61,7 @@ type StepRecord = {
 
 ### `GET /health`
 
-服務與 Redis 連線探測，供 Docker healthcheck 與運維使用。
+服務、Redis 與 Ollama（Phase 3）連線探測，供 Docker healthcheck 與運維使用。
 
 **Response 200**
 
@@ -69,15 +69,19 @@ type StepRecord = {
 {
   "status": "ok",
   "service": "token-trail-api",
-  "redis": true
+  "redis": true,
+  "ollama": false,
+  "inference_enabled": true
 }
 ```
 
 | 欄位 | 型別 | 說明 |
 |------|------|------|
-| status | string | `"ok"`（Redis 正常）或 `"degraded"`（Redis 不可用） |
+| status | string | `"ok"` 或 `"degraded"`（Redis 不可用，或 `inference_enabled=true` 時 Ollama 不可用） |
 | service | string | 固定 `"token-trail-api"` |
 | redis | boolean | Redis `PING` 結果 |
+| ollama | boolean | Ollama `/api/tags` 可連線時為 `true`；`inference_enabled=false` 時為 `false` |
+| inference_enabled | boolean | 是否啟用真實 AI 推理（環境變數 `INFERENCE_ENABLED`） |
 
 ---
 
@@ -473,10 +477,15 @@ Step 相關請求輸出 JSON 結構化日誌，必含 `session_id` 與 `trace_id
 |-------|----------|
 | `step_cache_hit` | Branch Cache 命中 |
 | `step_cache_miss` | Branch Cache 未命中 |
-| `fallback_mock_inference` | Fallback 使用 Mock LLM |
+| `fallback_inference_resolved` | Fallback 透過推理層（Ollama 或語料降級）取得候選 |
 | `fallback_static_corpus` | Fallback 使用靜態安全語料 |
+| `inference_completed` | Ollama 推理成功（含 `inference_ms`） |
+| `inference_ollama_failed` | Ollama 連線或超時失敗 |
+| `inference_corpus_fallback` | 推理降級至靜態語料樹 |
+| `inference_insufficient_candidates` | 模型輸出未通過文法約束 |
 | `prefetch_completed` | 背景預載成功 |
-| `prefetch_failed` | 背景預載失敗（不影響 Step 回應） |
+| `prefetch_branch_failed` | 單分支預載失敗（不阻斷其餘分支） |
+| `prefetch_failed` | 背景預載整體失敗（不影響 Step 回應） |
 
 ---
 

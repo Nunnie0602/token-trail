@@ -28,7 +28,8 @@ async def create_session(
             session_id=session.session_id,
             mode=session.mode,
             model=session.model,
-            branch_token_ids=[token.token_id for token in next_tokens if not token.is_eos],
+            current_prompt=session.current_prompt,
+            branch_tokens=next_tokens,
         )
 
     return CreateSessionResponse(
