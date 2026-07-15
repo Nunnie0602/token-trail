@@ -7,11 +7,12 @@ class Settings(BaseSettings):
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "qwen2:1.5b"
     inference_enabled: bool = True
-    inference_timeout_seconds: float = 8.0
+    inference_timeout_seconds: float = 15.0
     log_level: str = "INFO"
     log_step_cache_hit: bool = True
     cors_origins: str = "http://localhost:3000"
     prefetch_enabled: bool = True
+    prefetch_concurrency: int = 2
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

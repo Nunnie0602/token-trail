@@ -1,6 +1,7 @@
 import pytest
 from app.cache.keys import CACHE_TTL_SECONDS, prefetch_key, session_key
-from app.services.session import SessionManager
+from app.models.schemas import TokenFood
+from app.services.session import PlayerSession, SessionManager
 
 
 @pytest.mark.asyncio
@@ -32,3 +33,37 @@ async def test_session_ttl(fake_redis):
 def test_prefetch_key_format():
     key = prefetch_key("abc-123", "CLASSIC_ACT_01")
     assert key == "prefetch:abc-123:CLASSIC_ACT_01"
+
+
+def test_player_session_from_dict_without_dynamic_tokens():
+    payload = {
+        "session_id": "legacy-session",
+        "mode": "classic",
+        "model": "qwen",
+        "game_status": "PLAYING",
+        "current_prompt": "夜半",
+        "current_temperature": 1.0,
+        "snake_length": 1,
+        "current_node_id": "C_L1A",
+        "score": 0,
+        "step_history": [],
+        "updated_at": "2026-07-07T00:00:00+00:00",
+    }
+    session = PlayerSession.from_dict(payload)
+    assert session.dynamic_tokens == {}
+
+
+@pytest.mark.asyncio
+async def test_session_persists_dynamic_tokens(fake_redis):
+    manager = SessionManager(fake_redis)
+    session = await manager.create("classic", "qwen")
+    session.dynamic_tokens["INF_TEST01"] = TokenFood(
+        token_id="INF_TEST01",
+        text="打開門縫",
+        prob=0.5,
+    )
+    await manager.save(session)
+
+    loaded = await manager.get(session.session_id)
+    assert loaded is not None
+    assert loaded.dynamic_tokens["INF_TEST01"].text == "打開門縫"

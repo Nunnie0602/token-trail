@@ -5,7 +5,6 @@ from app.core.config import settings
 from app.core.logging import logger
 from app.core.step_profile import StepProfile
 from app.models.schemas import StepRecord, StepResponse
-from app.services.corpus import find_token
 from app.services.decoding import (
     derive_speed_multiplier,
     derive_temperature,
@@ -16,6 +15,7 @@ from app.services.fallback import FallbackService
 from app.services.prefetcher import PrefetchScheduler
 from app.services.result import FinalizeService
 from app.services.session import SessionManager
+from app.services.token_resolver import register_dynamic_tokens, resolve_token
 
 
 def _elapsed_ms(started: float) -> float:
@@ -54,7 +54,12 @@ class GameStepService:
             raise SessionNotFoundError(session_id)
 
         started = time.perf_counter()
-        eaten_token = find_token(session.mode, session.model, eaten_token_id)
+        eaten_token = resolve_token(
+            session.mode,
+            session.model,
+            eaten_token_id,
+            dynamic_tokens=session.dynamic_tokens,
+        )
         if eaten_token is None:
             raise InvalidTokenError(eaten_token_id)
         profile.business_ms += _elapsed_ms(started)
@@ -122,6 +127,7 @@ class GameStepService:
             next_tokens = []
         else:
             session.game_status = "PLAYING"
+        register_dynamic_tokens(session, next_tokens)
         profile.business_ms += _elapsed_ms(started)
 
         session_save_ms, session_set_ms = await self._sessions.save_timed(session)
