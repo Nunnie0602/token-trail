@@ -117,14 +117,14 @@ class PrefetchScheduler:
             if branches:
                 await self._cache.set_batch(session_id, branches)
                 queue_waits = [
-                    float(metric["queue_wait_ms"])
+                    float(value)
                     for metric in branch_metrics
-                    if isinstance(metric.get("queue_wait_ms"), int | float)
+                    if isinstance(value := metric.get("queue_wait_ms"), int | float)
                 ]
                 branch_totals = [
-                    float(metric["branch_total_ms"])
+                    float(value)
                     for metric in branch_metrics
-                    if isinstance(metric.get("branch_total_ms"), int | float)
+                    if isinstance(value := metric.get("branch_total_ms"), int | float)
                 ]
                 source_counts = {
                     source: sum(

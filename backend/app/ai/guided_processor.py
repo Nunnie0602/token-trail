@@ -1,5 +1,6 @@
 import re
 import uuid
+from collections.abc import Callable
 
 from app.ai.grammars.classic import is_valid_classic_phrase
 from app.ai.grammars.qing import is_valid_qing_phrase
@@ -25,7 +26,7 @@ def _clean_line(line: str) -> str:
     return cleaned.strip()
 
 
-def _validator(mode: GameMode):
+def _validator(mode: GameMode) -> Callable[[str], bool]:
     if mode == "qing":
         return is_valid_qing_phrase
     return is_valid_classic_phrase

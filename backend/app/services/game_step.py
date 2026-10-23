@@ -127,7 +127,7 @@ class GameStepService:
             next_tokens = []
         else:
             session.game_status = "PLAYING"
-        register_dynamic_tokens(session, next_tokens)
+        register_dynamic_tokens(session, next_tokens or [])
         profile.business_ms += _elapsed_ms(started)
 
         session_save_ms, session_set_ms = await self._sessions.save_timed(session)
