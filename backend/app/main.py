@@ -5,6 +5,7 @@ import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.ai.inference import OllamaClient
 from app.api.deps import build_game_step_service
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -64,9 +65,25 @@ async def health() -> dict[str, str | bool]:
     except Exception:
         redis_ok = False
 
-    status = "ok" if redis_ok else "degraded"
+    ollama_ok = False
+    if settings.inference_enabled:
+        ollama_client = OllamaClient(
+            settings.ollama_host,
+            timeout=settings.inference_timeout_seconds,
+        )
+        ollama_ok = await ollama_client.is_available()
+
+    if not redis_ok:
+        status = "degraded"
+    elif settings.inference_enabled and not ollama_ok:
+        status = "degraded"
+    else:
+        status = "ok"
+
     return {
         "status": status,
         "service": "token-trail-api",
         "redis": redis_ok,
+        "ollama": ollama_ok,
+        "inference_enabled": settings.inference_enabled,
     }

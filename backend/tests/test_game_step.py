@@ -3,7 +3,7 @@ import asyncio
 import pytest
 from app.cache.branch_cache import BranchCache
 from app.services.fallback import FallbackService
-from app.services.game_step import GameStepService, SessionNotFoundError
+from app.services.game_step import GameStepService, InvalidTokenError, SessionNotFoundError
 from app.services.prefetcher import PrefetchScheduler
 from app.services.result import FinalizeService, ResultManager
 from app.services.session import SessionManager
@@ -173,18 +173,88 @@ async def test_step_profile_segments_on_cache_hit(fake_redis):
 
 @pytest.mark.asyncio
 async def test_prefetch_writes_branches(fake_redis):
+
     sessions = SessionManager(fake_redis)
     session = await sessions.create("classic", "qwen")
     cache = BranchCache(fake_redis)
     prefetcher = PrefetchScheduler(cache)
+    next_tokens = sessions.initial_next_tokens(session)
 
     await prefetcher.seed_branches(
         session_id=session.session_id,
         mode="classic",
         model="qwen",
-        branch_token_ids=["C_L1A", "C_L1B", "C_L1C", "C_L1D"],
+        current_prompt=session.current_prompt,
+        branch_tokens=next_tokens,
     )
     await asyncio.sleep(0.05)
 
-    assert await cache.get(session.session_id, "C_L1A") is not None
-    assert await cache.get(session.session_id, "C_L1B") is not None
+    for token in next_tokens:
+        assert await cache.get(session.session_id, token.token_id) is not None
+
+
+@pytest.mark.asyncio
+async def test_step_continues_after_eating_dynamic_inf_token(fake_redis):
+    from app.models.schemas import TokenFood
+
+    sessions = SessionManager(fake_redis)
+    session = await sessions.create("classic", "qwen")
+    cache = BranchCache(fake_redis)
+
+    first_branch_tokens = [
+        TokenFood(token_id="INF_AAAA1111", text="打開門縫", prob=0.4),
+        TokenFood(token_id="INF_BBBB2222", text="裝作沒聽見", prob=0.28),
+        TokenFood(token_id="INF_CCCC3333", text="拿起掃把", prob=0.2),
+        TokenFood(token_id="INF_DDDD4444", text="開始直播", prob=0.12),
+    ]
+    second_branch_tokens = [
+        TokenFood(token_id="INF_EEEE5555", text="聽見腳步", prob=0.4),
+        TokenFood(token_id="INF_FFFF6666", text="心裡一緊", prob=0.28),
+        TokenFood(token_id="INF_GGGG7777", text="窗外輕風", prob=0.2),
+        TokenFood(token_id="INF_HHHH8888", text="夜色更深", prob=0.12),
+    ]
+    await cache.set(session.session_id, "C_L1A", first_branch_tokens)
+    await cache.set(session.session_id, "INF_AAAA1111", second_branch_tokens)
+
+    service = _build_step_service(
+        fake_redis,
+        cache=cache,
+        prefetcher=PrefetchScheduler(cache, enabled=False),
+    )
+    first_response, _ = await service.execute(
+        session_id=session.session_id,
+        eaten_token_id="C_L1A",
+        current_snake_length=2,
+        trace_id="trace-inf-1",
+    )
+    assert first_response.next_tokens_food[0].token_id.startswith("INF_")
+
+    second_response, _ = await service.execute(
+        session_id=session.session_id,
+        eaten_token_id="INF_AAAA1111",
+        current_snake_length=3,
+        trace_id="trace-inf-2",
+    )
+    assert second_response.game_status == "PLAYING"
+    assert second_response.next_tokens_food[0].token_id == "INF_EEEE5555"
+
+    updated = await sessions.get(session.session_id)
+    assert updated is not None
+    assert len(updated.step_history) == 2
+    assert updated.step_history[1].token_id == "INF_AAAA1111"
+    assert "打開門縫" in updated.current_prompt
+
+
+@pytest.mark.asyncio
+async def test_step_rejects_unknown_dynamic_token(fake_redis):
+    sessions = SessionManager(fake_redis)
+    session = await sessions.create("classic", "qwen")
+    service = _build_step_service(fake_redis)
+
+    with pytest.raises(InvalidTokenError):
+        await service.execute(
+            session_id=session.session_id,
+            eaten_token_id="INF_UNKNOWN1",
+            current_snake_length=2,
+            trace_id="trace-unknown-inf",
+        )

@@ -1,3 +1,7 @@
+import os
+
+os.environ["INFERENCE_ENABLED"] = "false"
+
 import pytest_asyncio
 from app.api.deps import build_game_step_service
 from app.main import app

@@ -29,7 +29,9 @@ async def test_fallback_on_cache_miss():
         trace_id="t1",
         mode="classic",
         model="qwen",
+        current_prompt="雨夜",
         eaten_token_id="C_L1A",
+        eaten_text="聽見敲門",
     )
     assert len(tokens) == 4
 

@@ -1,7 +1,7 @@
 import json
 import time
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 
 from redis.asyncio import Redis
@@ -24,10 +24,14 @@ class PlayerSession:
     score: int
     step_history: list[StepRecord]
     updated_at: str
+    dynamic_tokens: dict[str, TokenFood] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, object]:
         data = asdict(self)
         data["step_history"] = [record.model_dump() for record in self.step_history]
+        data["dynamic_tokens"] = {
+            token_id: token.model_dump() for token_id, token in self.dynamic_tokens.items()
+        }
         return data
 
     @classmethod
@@ -37,6 +41,13 @@ class PlayerSession:
             StepRecord.model_validate(record)
             for record in (raw_history if isinstance(raw_history, list) else [])
         ]
+        raw_dynamic = data.get("dynamic_tokens", {})
+        dynamic_tokens: dict[str, TokenFood] = {}
+        if isinstance(raw_dynamic, dict):
+            dynamic_tokens = {
+                str(token_id): TokenFood.model_validate(token)
+                for token_id, token in raw_dynamic.items()
+            }
         return cls(
             session_id=str(data["session_id"]),
             mode=str(data["mode"]),  # type: ignore[arg-type]
@@ -48,6 +59,7 @@ class PlayerSession:
             current_node_id=str(data["current_node_id"]) if data.get("current_node_id") else None,
             score=int(str(data.get("score", 0))),
             step_history=step_history,
+            dynamic_tokens=dynamic_tokens,
             updated_at=str(data["updated_at"]),
         )
 

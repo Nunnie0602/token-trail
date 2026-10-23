@@ -4,6 +4,7 @@ from typing import cast
 from fastapi import Request
 from redis.asyncio import Redis
 
+from app.ai.inference import InferenceService
 from app.cache.branch_cache import BranchCache
 from app.core.config import settings
 from app.services.fallback import FallbackService
@@ -32,16 +33,21 @@ def build_finalize_service(redis: Redis) -> FinalizeService:
     return FinalizeService(sessions, results)
 
 
+def build_inference_service() -> InferenceService:
+    return InferenceService()
+
+
 def build_game_step_service(redis: Redis) -> GameStepService:
     cache = BranchCache(redis)
     sessions = SessionManager(redis)
     results = ResultManager(redis)
     finalize = FinalizeService(sessions, results)
+    inference = build_inference_service()
     return GameStepService(
         sessions=sessions,
         cache=cache,
-        fallback=FallbackService(),
-        prefetcher=PrefetchScheduler(cache, enabled=settings.prefetch_enabled),
+        fallback=FallbackService(inference),
+        prefetcher=PrefetchScheduler(cache, inference, enabled=settings.prefetch_enabled),
         finalize=finalize,
     )
 
